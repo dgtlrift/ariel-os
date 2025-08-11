@@ -450,11 +450,6 @@ contexts:
   - name: esp32-s3-wroom-1
     parent: esp32s3
 
-  - name: heltec-v3
-    parent: esp32s3
-    provides:
-      - has_usb_device_port
-
   - name: stm32
     help: STM32 support (based on embassy-stm32)
     parent: ariel-os
@@ -1769,6 +1764,11 @@ builders:
 
   - name: espressif-esp32-s3-devkitc-1
     parent: esp32-s3-wroom-1
+    provides:
+      - has_usb_device_port
+
+  - name: heltec-v3
+    parent: esp32s3
     provides:
       - has_usb_device_port
 
