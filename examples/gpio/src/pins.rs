@@ -26,6 +26,13 @@ ariel_os::hal::define_peripherals!(Peripherals {
     btn1: GPIO1
 });
 
+#[cfg(context = "heltec-v3")]
+ariel_os::hal::define_peripherals!(Peripherals {
+    led1: GPIO1,
+    led2: GPIO35,
+    btn1: GPIO0,
+});
+
 #[cfg(context = "nordic-thingy-91-x-nrf9151")]
 ariel_os::hal::define_peripherals!(Peripherals {
     led1: P0_29,

@@ -3,6 +3,7 @@ apps:
     context:
       - bbc-microbit-v2
       - esp
+      - heltec-v3
       - nordic-thingy-91-x-nrf9151
       - nrf52840
       - nrf5340

@@ -494,6 +494,15 @@ boards:
       user_usb: not_currently_supported
       ethernet_over_usb: not_currently_supported
 
+  heltec-v3:
+    name: Heltec V3 ESP32S3 with SX1262 LoRa-Node 
+    url: https://web.archive.org/web/20250807184214/https://heltec.org/project/wifi-lora-32-v3/
+    chip: esp32s3
+    tier: "1"
+    support:
+      user_usb: not_currently_supported
+      ethernet_over_usb: not_currently_supported
+
   st-b-l475e-iot01a:
     name: ST B-L475E-IOT01A
     url: https://web.archive.org/web/20250402084429/https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html

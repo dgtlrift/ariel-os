@@ -5,6 +5,7 @@ apps:
       - bbc-microbit-v1
       - bbc-microbit-v2
       - esp
+      - heltec-v3
       - nordic-thingy-91-x-nrf9151
       - nrf52840dk
       - nrf5340dk
