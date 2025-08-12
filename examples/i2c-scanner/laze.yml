@@ -5,3 +5,4 @@ apps:
       - bbc-microbit-v2
       - st-nucleo-f042k6
       - st-steval-mkboxpro
+      - heltec-v3

@@ -24,3 +24,11 @@ ariel_os::hal::define_peripherals!(Peripherals {
     i2c_scl: PB6,
     i2c_sda: PB7
 });
+
+#[cfg(context = "heltec-v3")]
+pub type SensorI2c = i2c::controller::I2C1;
+#[cfg(context = "heltec-v3")]
+ariel_os::hal::define_peripherals!(Peripherals {
+    i2c_scl: GPIO18,
+    i2c_sda: GPIO17,
+});
