@@ -86,7 +86,7 @@ pub mod peripherals {
             pub type GPIO29 = esp_hal::gpio::GpioPin<29>;
             pub type GPIO30 = esp_hal::gpio::GpioPin<30>;
         }
-        else if #[cfg(context = "esp32")] {
+        else if #[cfg(any(context = "esp32", context = "esp32s3"))] {
             pub type GPIO22 = esp_hal::gpio::GpioPin<22>;
             pub type GPIO23 = esp_hal::gpio::GpioPin<23>;
             pub type GPIO24 = esp_hal::gpio::GpioPin<24>;
