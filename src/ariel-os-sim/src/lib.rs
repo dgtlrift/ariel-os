@@ -125,6 +125,15 @@ mod private {
 #[doc(hidden)]
 #[must_use]
 pub fn init() -> OptionalPeripherals {
+    // A panic can't unwind out of the host `main` (an `extern "C"` function), so the
+    // default would abort with a second panic and a backtrace that hides the first. Print
+    // the panic and exit with Rust's panic status instead; the simulator traces both.
+    std::panic::set_hook(Box::new(|info| {
+        use std::io::Write as _;
+        eprintln!("{info}");
+        let _ = std::io::stderr().flush();
+        std::process::exit(101);
+    }));
     kernel::connect();
     OptionalPeripherals::all()
 }
