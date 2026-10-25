@@ -24,6 +24,9 @@ fn main() {
         (16 * KIBIBYTES, 8 * KIBIBYTES)
     } else if is_in_current_contexts(&["stm32h755zi", "stm32h753zi"]) {
         (256 * KIBIBYTES, 128 * KIBIBYTES)
+    } else if is_in_current_contexts(&["sim-chip"]) {
+        // The region comes from the simulator at run time; storage.x is not linked.
+        (16 * KIBIBYTES, 4 * KIBIBYTES)
     } else if !is_in_current_contexts(&["ariel-os"]) {
         // Dummy value for platform-independent tooling.
         (8 * KIBIBYTES, 4 * KIBIBYTES)
