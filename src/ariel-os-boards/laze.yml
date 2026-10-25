@@ -244,6 +244,13 @@ builders:
   provides:
   - has_leds
   - has_usb_device_port
+- name: sim
+  parent: sim-chip
+  provides:
+  - has_buttons
+  - has_host_facing_uart
+  - has_i2c_bus
+  - has_leds
 - name: st-b-l072z-lrwan1
   parent: stm32l072cz
   provides:

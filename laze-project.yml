@@ -658,7 +658,8 @@ contexts:
     # using sbd.
     parent: ariel-os
     selects:
-      - infini-core
+      # Optional, so a child context can bring its own critical section (sim-chip).
+      - ?infini-core
     provides:
       - has_device_identity
       - has_hwrng
@@ -677,6 +678,22 @@ contexts:
         - -Clink-arg=-Wl,-znostart-stop-gc
       CARGO_TARGET_PREFIX: CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU
       CARGO_RUNNER: '"sh -c"'
+
+  - name: sim-chip
+    help: |
+      A microcontroller simulated by ariel-sim (dgtlrift/ariel-sim): Ariel firmware as a
+      host process, its peripherals the simulator's device models, its time the
+      simulation's. Binaries are started by the simulator, not by hand.
+    parent: native-chip
+    selects:
+      - sim-critical-section
+    provides:
+      - has_storage_support
+      - has_swi
+    disables:
+      - infini-core
+      - sw/threading
+      - tuntap
 
   - name: stm32
     help: STM32 support (based on embassy-stm32)
@@ -1541,6 +1558,16 @@ modules:
         RUSTFLAGS:
           - -Clink-arg=-Tstorage.x
 
+  - name: sw/storage
+    help: storage on sim-chip, whose region comes from the simulator, not the linker
+    context: sim-chip
+    selects:
+      - has_storage_support
+    env:
+      global:
+        FEATURES:
+          - ariel-os/storage
+
   - name: has_storage_support
     selects:
       - doc-only
@@ -2121,6 +2148,12 @@ modules:
   - name: has_multi_core_support
     selects:
       - doc-only
+
+  - name: sim-critical-section
+    help: the host critical section of sim-chip, provided by its HAL (one thread)
+    context: sim-chip
+    provides_unique:
+      - critical-section
 
   - name: infini-core
     help: use platform as if it had one core per thread

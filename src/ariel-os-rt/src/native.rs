@@ -17,6 +17,13 @@ pub unsafe extern "C" fn main(_argc: isize, _argv: *const *const u8) -> isize {
 
 pub fn init() {}
 
+/// Waits for an interrupt, which a host process never gets: without threads (sim-chip,
+/// whose executor runs inside `INIT_FUNCS`), nothing is left to run.
+#[cfg(not(feature = "threading"))]
+pub fn wfi() {
+    std::thread::park();
+}
+
 /// Returns a `Stack` handle for the currently active thread.
 pub(crate) fn stack() -> crate::stack::Stack {
     // Returning (0,0) is safe, but stack usage data will be empty.
