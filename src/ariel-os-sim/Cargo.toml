@@ -1,0 +1,50 @@
+[package]
+name = "ariel-os-sim"
+version = "0.6.0"
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "Ariel OS HAL for sim-chip: firmware as a host process in the ariel-sim simulator"
+
+[dependencies]
+# As on native: `debug::exit` and logging use the host process.
+ariel-os-debug = { workspace = true, features = ["std"] }
+ariel-os-embassy-common = { workspace = true }
+ariel-os-log = { workspace = true, features = ["std"] }
+ariel-os-random = { workspace = true, optional = true }
+critical-section = { workspace = true, features = ["std"] }
+embassy-executor = { workspace = true, default-features = false }
+embassy-hal-internal = { workspace = true }
+embassy-time-driver = { workspace = true }
+embassy-time-queue-utils = { workspace = true }
+embedded-hal = { workspace = true }
+embedded-hal-async = { workspace = true }
+embedded-storage-async = { workspace = true, optional = true }
+rand_chacha = { version = "0.9.0", default-features = false, optional = true }
+rand_core = { workspace = true, optional = true }
+static_cell = { workspace = true }
+# The kernel-to-node messages (src/wire, a copy of ariel-sim's sim-node-wire): JSON
+# through serde, byte strings as base64url.
+base64 = { version = "0.22", default-features = false, features = ["alloc"] }
+serde = { workspace = true, features = ["derive", "std"] }
+serde_json = { version = "1.0.140" }
+# SOCK_SEQPACKET Unix sockets, which std doesn't have.
+socket2 = { version = "0.6.5", features = ["all"] }
+
+[features]
+## Enables GPIO interrupt support.
+external-interrupts = ["ariel-os-embassy-common/external-interrupts"]
+## Enables seeding the random number generator from the simulator's seed.
+hwrng = ["dep:ariel-os-random", "dep:rand_chacha", "dep:rand_core"]
+## Enables I2C support.
+i2c = ["ariel-os-embassy-common/i2c"]
+## Enables SPI support.
+spi = ["ariel-os-embassy-common/spi"]
+## Enables storage support.
+storage = ["dep:embedded-storage-async"]
+## Enables the time driver.
+time = []
+
+[lints]
+workspace = true

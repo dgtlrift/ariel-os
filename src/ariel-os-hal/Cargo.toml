@@ -19,8 +19,11 @@ embedded-hal-async = { workspace = true }
 [target.'cfg(context = "esp")'.dependencies]
 ariel-os-esp = { workspace = true }
 
-[target.'cfg(context = "native-chip")'.dependencies]
+[target.'cfg(all(context = "native-chip", not(context = "sim-chip")))'.dependencies]
 ariel-os-native = { workspace = true }
+
+[target.'cfg(context = "sim-chip")'.dependencies]
+ariel-os-sim = { workspace = true }
 
 [target.'cfg(context = "nrf")'.dependencies]
 ariel-os-nrf = { workspace = true }
@@ -49,6 +52,7 @@ external-interrupts = [
   "ariel-os-embassy-common/external-interrupts",
   "ariel-os-esp/external-interrupts",
   "ariel-os-nrf/external-interrupts",
+  "ariel-os-sim/external-interrupts",
   "ariel-os-rp/external-interrupts",
   "ariel-os-stm32/external-interrupts",
 ]
@@ -60,6 +64,7 @@ i2c = [
   "ariel-os-embassy-common/i2c",
   "ariel-os-esp/i2c",
   "ariel-os-nrf/i2c",
+  "ariel-os-sim/i2c",
   "ariel-os-rp/i2c",
   "ariel-os-stm32/i2c",
 ]
@@ -68,6 +73,7 @@ spi = [
   "ariel-os-embassy-common/spi",
   "ariel-os-esp/spi",
   "ariel-os-nrf/spi",
+  "ariel-os-sim/spi",
   "ariel-os-rp/spi",
   "ariel-os-stm32/spi",
 ]
@@ -76,6 +82,7 @@ spi = [
 time = [
   "ariel-os-esp/time",
   "ariel-os-nrf/time",
+  "ariel-os-sim/time",
   "ariel-os-rp/time",
   "ariel-os-stm32/time",
 ]
@@ -123,6 +130,7 @@ hwrng = [
   "ariel-os-esp/hwrng",
   "ariel-os-native/hwrng",
   "ariel-os-nrf/hwrng",
+  "ariel-os-sim/hwrng",
   "ariel-os-rp/hwrng",
   "ariel-os-stm32/hwrng",
 ]
@@ -130,6 +138,7 @@ hwrng = [
 storage = [
   #"ariel-os-esp/storage",
   "ariel-os-nrf/storage",
+  "ariel-os-sim/storage",
   "ariel-os-rp/storage",
   "ariel-os-stm32/storage",
 ]

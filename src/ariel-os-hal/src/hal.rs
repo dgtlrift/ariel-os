@@ -35,6 +35,9 @@ pub use crate::group_peripherals;
 pub use define_peripherals::*;
 
 cfg_select! {
+    context = "sim-chip" => {
+        pub use ariel_os_sim::*;
+    }
     context = "native-chip" => {
         mod dummy;
         pub use ariel_os_native::*;

@@ -303,6 +303,7 @@ dependencies = [
  "ariel-os-native",
  "ariel-os-nrf",
  "ariel-os-rp",
+ "ariel-os-sim",
  "ariel-os-stm32",
  "bt-hci",
  "const_panic",
@@ -608,6 +609,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "ariel-os-sim"
+version = "0.6.0"
+dependencies = [
+ "ariel-os-debug",
+ "ariel-os-embassy-common",
+ "ariel-os-log",
+ "ariel-os-random",
+ "base64 0.22.1",
+ "critical-section",
+ "embassy-executor",
+ "embassy-hal-internal",
+ "embassy-time-driver",
+ "embassy-time-queue-utils",
+ "embedded-hal 1.0.0",
+ "embedded-hal-async",
+ "embedded-storage-async",
+ "rand_chacha 0.9.0",
+ "rand_core 0.9.3",
+ "serde",
+ "serde_json",
+ "socket2",
+ "static_cell",
+]
+
+[[package]]
 name = "ariel-os-stm32"
 version = "0.6.0"
 dependencies = [
@@ -818,6 +844,12 @@ name = "base64"
 version = "0.21.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
+
+[[package]]
+name = "base64"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bench-sched-flags"
@@ -5459,7 +5491,7 @@ version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "836acee7034acc981677b98cd9e6cf123c7d9174be376281c86d8248fe5169eb"
 dependencies = [
- "base64",
+ "base64 0.21.7",
  "buffered-io",
  "embedded-io 0.7.1",
  "embedded-io-async 0.7.0",
@@ -5991,6 +6023,16 @@ dependencies = [
  "defmt 0.3.100",
  "heapless 0.9.3",
  "managed",
+]
+
+[[package]]
+name = "socket2"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
+dependencies = [
+ "libc",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
