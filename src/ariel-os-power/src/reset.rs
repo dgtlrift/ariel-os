@@ -5,7 +5,7 @@ pub fn reboot() -> ! {
     cfg_select! {
         context = "cortex-m" => cortex_m::peripheral::SCB::sys_reset(),
         context = "esp" => esp_hal::system::software_reset(),
-        context = "native" => std::process::exit(0),
+        context = "native-chip" => std::process::exit(0),
         context = "ariel-os" => {
             compile_error!("reboot is not yet implemented for this platform")
         }

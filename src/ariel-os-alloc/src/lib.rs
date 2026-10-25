@@ -123,7 +123,7 @@ mod alloc {
         let _ = CONFIG_HEAPSIZE;
 
         // compile-fail unless building docs etc.
-        #[cfg(all(context = "ariel-os", not(context = "native")))]
+        #[cfg(all(context = "ariel-os", not(context = "native-chip")))]
         compile_error!("ariel-os-alloc: unsupported architecture!");
     }
 }

@@ -53,7 +53,7 @@ cfg_select! {
         mod xtensa;
         pub use xtensa::Cpu;
     }
-    context = "native" => {
+    context = "native-chip" => {
         mod native;
         pub use native::Cpu;
     }

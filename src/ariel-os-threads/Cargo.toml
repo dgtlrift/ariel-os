@@ -53,7 +53,7 @@ static_cell = { workspace = true, optional = true }
 cortex-m = { workspace = true }
 cortex-m-rt = { workspace = true }
 
-[target.'cfg(context = "native")'.dependencies]
+[target.'cfg(context = "native-chip")'.dependencies]
 atomic-wait = { version = "1.1.0" }
 critical-section = { workspace = true, features = ["restore-state-bool"] }
 

@@ -21,7 +21,7 @@
 //! - [`Lock`](sync::Lock): basic locking object
 //! - [`thread_flags`]: thread-flag implementation for signaling between threads
 
-#![cfg_attr(not(any(test, context = "native")), no_std)]
+#![cfg_attr(not(any(test, context = "native-chip")), no_std)]
 #![cfg_attr(target_arch = "xtensa", feature(asm_experimental_arch))]
 #![deny(missing_docs)]
 // Disable indexing lints for now, possible panics are documented or rely on internally-enforced
@@ -167,7 +167,7 @@ impl Scheduler {
         cfg_select! {
             feature = "single-core" => self.current_thread,
             feature = "multi-core" => self.current_threads[usize::from(core_id())],
-            context = "native" => ThreadData::ID.get(),
+            context = "native-chip" => ThreadData::ID.get(),
             _ => {
                 let _ = self;
                 unreachable!();

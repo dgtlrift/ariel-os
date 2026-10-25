@@ -19,7 +19,7 @@ embedded-hal-async = { workspace = true }
 [target.'cfg(context = "esp")'.dependencies]
 ariel-os-esp = { workspace = true }
 
-[target.'cfg(context = "native")'.dependencies]
+[target.'cfg(context = "native-chip")'.dependencies]
 ariel-os-native = { workspace = true }
 
 [target.'cfg(context = "nrf")'.dependencies]

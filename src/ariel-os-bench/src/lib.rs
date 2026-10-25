@@ -1,6 +1,6 @@
 //! Provides on-board benchmarking facilities.
 
-#![cfg_attr(not(any(test, context = "native")), no_std)]
+#![cfg_attr(not(any(test, context = "native-chip")), no_std)]
 #![deny(clippy::pedantic)]
 #![deny(missing_docs)]
 
@@ -13,7 +13,7 @@ cfg_select! {
         mod esp;
         use esp as bench;
     }
-    context = "native" => {
+    context = "native-chip" => {
         mod native;
         use native as bench;
     }

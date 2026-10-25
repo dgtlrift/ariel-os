@@ -1,6 +1,6 @@
 //! Provides runtime helpers.
 
-#![cfg_attr(not(any(test, context = "native")), no_std)]
+#![cfg_attr(not(any(test, context = "native-chip")), no_std)]
 #![cfg_attr(test, no_main)]
 #![deny(missing_docs)]
 #![allow(incomplete_features)]
@@ -40,7 +40,7 @@ cfg_select! {
         mod riscv;
         use riscv as arch;
     }
-    context = "native" => {
+    context = "native-chip" => {
         mod native;
         use native as arch;
     }

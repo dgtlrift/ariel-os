@@ -2044,7 +2044,7 @@ modules:
     provides_unique:
       - network_device
     context:
-      - native
+      - native-chip
     env:
       global:
         FEATURES:
@@ -2127,7 +2127,7 @@ modules:
     provides_unique:
       - critical-section
     context:
-      - native
+      - native-chip
     env:
       global:
         FEATURES:
@@ -2413,7 +2413,7 @@ modules:
     help: native specific settings for embedded-test
     context:
       # This overrides ariel-os::embedded-test-extra
-      - native
+      - native-chip
     env:
       global:
         FEATURES:
@@ -2425,7 +2425,7 @@ modules:
       - doc-only
 
   - name: embedded-test-runner-std
-    context: native
+    context: native-chip
     provides_unique:
       - embedded-test-runner
     env:

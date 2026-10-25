@@ -21,7 +21,7 @@
 //! part *directly followed* by a [`ReadingChannel`] with the label [`Label::Opaque`] containing the second part.
 //!
 //! [ariel-os-sensors]: ariel_os_sensors
-#![cfg_attr(not(any(test, context = "native")), no_std)]
+#![cfg_attr(not(any(test, context = "native-chip")), no_std)]
 #![deny(missing_docs)]
 
 use ariel_os_sensors::{
