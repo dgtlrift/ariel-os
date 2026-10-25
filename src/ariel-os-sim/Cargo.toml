@@ -24,9 +24,10 @@ embedded-storage-async = { workspace = true, optional = true }
 rand_chacha = { version = "0.9.0", default-features = false, optional = true }
 rand_core = { workspace = true, optional = true }
 static_cell = { workspace = true }
-# The kernel-to-node messages (src/wire, a copy of ariel-sim's sim-node-wire): JSON
-# through serde, byte strings as base64url.
+# The kernel-to-node messages (src/wire, a copy of ariel-sim's sim-node-wire): CBOR
+# through serde (ciborium), byte strings native; base64url only in the types' JSON form.
 base64 = { version = "0.22", default-features = false, features = ["alloc"] }
+ciborium = { version = "0.2.2" }
 serde = { workspace = true, features = ["derive", "std"] }
 serde_json = { version = "1.0.140" }
 # SOCK_SEQPACKET Unix sockets, which std doesn't have.

@@ -34,12 +34,12 @@ There is no `uart`, `usb` or `ble` module in M8. Apps that need them are unavail
 
 - A reply with `error` (an unknown pin or bus) panics with the kernel's message. That's a board or HAL bug, not something firmware can handle.
 - A socket error or a message that doesn't decode panics too. The supervisor records it as a failure.
-- Bus and flash operations over 32 KiB are split into several requests (`MAX_CHUNK`), so a message stays under 64 KiB.
+- Bus and flash operations over 64 KiB are split into several requests (`MAX_CHUNK`), so a message stays under 65 KiB.
 - The flash's units are fixed, as `NorFlash` needs them at compile time: 1 MiB, 4-byte writes, 4 KiB erases (the sim board's). A board whose program flash differs gets `NotAligned` from the kernel.
 
 ## The messages
 
-`src/wire` is a copy of ariel-sim's `sim-node-wire` crate: the message types generated from its `schema/node.cddl`, and their framing (JSON, one message per `SOCK_SEQPACKET` packet). ariel-sim is private and this fork is public, so the HAL can't depend on it by git. ariel-sim's `scripts/sync-wire.sh` writes the copy, and its CI checks the copy is current. Never edit it here.
+`src/wire` is a copy of ariel-sim's `sim-node-wire` crate: the message types generated from its `schema/node.cddl`, and their framing (CBOR, one message per `SOCK_SEQPACKET` packet). ariel-sim is private and this fork is public, so the HAL can't depend on it by git. ariel-sim's `scripts/sync-wire.sh` writes the copy, and its CI checks the copy is current. Never edit it here.
 
 ## Dependencies
 
@@ -47,7 +47,8 @@ At the versions Ariel's workspace already uses: `embassy-executor`, `embassy-tim
 
 New to the workspace:
 - `socket2`, for the `SOCK_SEQPACKET` socket, which `std` doesn't have;
-- `base64` 0.22, for byte strings in the messages (the workspace has 0.21 through another crate).
+- `ciborium` 0.2, the messages' CBOR encoding;
+- `base64` 0.22, for byte strings in the message types' JSON form (the workspace has 0.21 through another crate).
 
 ## Tests
 

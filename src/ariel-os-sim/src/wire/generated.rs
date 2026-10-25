@@ -4,40 +4,128 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Byte strings (`bstr`), in the form each serde format expects.
+///
+/// Human-readable formats such as JSON get base64url text (RFC 8949 section 6.1), binary
+/// ones such as CBOR a native byte string. Decoding accepts both, as serde's buffering for
+/// untagged enums reports itself human-readable in any format.
+#[allow(dead_code)]
 mod base64url_serde {
     use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-    use serde::{Deserialize, Deserializer, Serializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 
     pub fn serialize<S: Serializer>(v: &[u8], s: S) -> Result<S::Ok, S::Error> {
-        s.serialize_str(&URL_SAFE_NO_PAD.encode(v))
+        if s.is_human_readable() {
+            s.serialize_str(&URL_SAFE_NO_PAD.encode(v))
+        } else {
+            s.serialize_bytes(v)
+        }
+    }
+
+    struct BytesVisitor;
+
+    impl<'de> de::Visitor<'de> for BytesVisitor {
+        type Value = Vec<u8>;
+
+        fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.write_str("a byte string, or base64url text")
+        }
+
+        fn visit_str<E: de::Error>(self, v: &str) -> Result<Vec<u8>, E> {
+            URL_SAFE_NO_PAD.decode(v).map_err(E::custom)
+        }
+
+        fn visit_bytes<E: de::Error>(self, v: &[u8]) -> Result<Vec<u8>, E> {
+            Ok(v.to_vec())
+        }
+
+        fn visit_byte_buf<E: de::Error>(self, v: Vec<u8>) -> Result<Vec<u8>, E> {
+            Ok(v)
+        }
     }
 
     pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<u8>, D::Error> {
-        let s = String::deserialize(d)?;
-        URL_SAFE_NO_PAD.decode(&s).map_err(serde::de::Error::custom)
+        if d.is_human_readable() {
+            d.deserialize_str(BytesVisitor)
+        } else {
+            d.deserialize_byte_buf(BytesVisitor)
+        }
     }
 
+    /// A byte string borrowed for serializing.
+    pub struct BytesRef<'a>(pub &'a [u8]);
+
+    impl Serialize for BytesRef<'_> {
+        fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+            serialize(self.0, s)
+        }
+    }
+
+    /// A byte string owned after deserializing.
+    pub struct Bytes(pub Vec<u8>);
+
+    impl<'de> Deserialize<'de> for Bytes {
+        fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+            deserialize(d).map(Bytes)
+        }
+    }
+
+    /// `Option<bstr>`.
     pub mod option {
-        use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
         use serde::{Deserialize, Deserializer, Serializer};
 
         pub fn serialize<S: Serializer>(v: &Option<Vec<u8>>, s: S) -> Result<S::Ok, S::Error> {
             match v {
-                Some(bytes) => s.serialize_str(&URL_SAFE_NO_PAD.encode(bytes)),
+                Some(bytes) => s.serialize_some(&super::BytesRef(bytes)),
                 None => s.serialize_none(),
             }
         }
 
         pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Option<Vec<u8>>, D::Error> {
-            let s = Option::<String>::deserialize(d)?;
-            match s {
-                Some(s) => Ok(Some(
-                    URL_SAFE_NO_PAD
-                        .decode(&s)
-                        .map_err(serde::de::Error::custom)?,
-                )),
-                None => Ok(None),
+            Ok(Option::<super::Bytes>::deserialize(d)?.map(|b| b.0))
+        }
+    }
+
+    /// `[* bstr]`.
+    pub mod vec {
+        use serde::{Deserialize, Deserializer, Serializer};
+
+        pub fn serialize<S: Serializer>(v: &[Vec<u8>], s: S) -> Result<S::Ok, S::Error> {
+            s.collect_seq(v.iter().map(|b| super::BytesRef(b)))
+        }
+
+        pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<Vec<u8>>, D::Error> {
+            Ok(Vec::<super::Bytes>::deserialize(d)?
+                .into_iter()
+                .map(|b| b.0)
+                .collect())
+        }
+    }
+
+    /// `Option<[* bstr]>`.
+    pub mod vec_option {
+        use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+        struct Seq<'a>(&'a [Vec<u8>]);
+
+        impl Serialize for Seq<'_> {
+            fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                super::vec::serialize(self.0, s)
             }
+        }
+
+        pub fn serialize<S: Serializer>(v: &Option<Vec<Vec<u8>>>, s: S) -> Result<S::Ok, S::Error> {
+            match v {
+                Some(items) => s.serialize_some(&Seq(items)),
+                None => s.serialize_none(),
+            }
+        }
+
+        pub fn deserialize<'de, D: Deserializer<'de>>(
+            d: D,
+        ) -> Result<Option<Vec<Vec<u8>>>, D::Error> {
+            let v = Option::<Vec<super::Bytes>>::deserialize(d)?;
+            Ok(v.map(|items| items.into_iter().map(|b| b.0).collect()))
         }
     }
 }

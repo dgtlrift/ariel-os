@@ -2,8 +2,8 @@
 //! on the Ariel fork), and how they travel.
 //!
 //! The schema is `schema/node.cddl` (D19); its types are generated into [`generated`] and
-//! re-exported here. One message is one `SOCK_SEQPACKET` packet, JSON-encoded through
-//! serde, with byte strings as base64url text (`docs/m8.md` finding 1). The sockets are
+//! re-exported here. One message is one `SOCK_SEQPACKET` packet, CBOR-encoded through
+//! serde (`ciborium`), byte strings as CBOR byte strings (D14, `docs/m8.md` finding 1). The sockets are
 //! opened by each side, so this crate carries only the types, the framing and the
 //! version.
 
@@ -32,11 +32,11 @@ pub const VERSION: u64 = generated::HelloVersion::VALUE;
 
 /// The largest encoded message. A SEQPACKET packet this size fits the default socket
 /// buffer.
-pub const MAX_MESSAGE: usize = 64 * 1024;
+pub const MAX_MESSAGE: usize = 65 * 1024;
 
 /// The most data one bus or flash operation carries. The HAL splits larger operations, so
-/// a message stays under [`MAX_MESSAGE`]: 32 KiB is about 43 KiB as base64url.
-pub const MAX_CHUNK: usize = 32 * 1024;
+/// a message, its data and the rest of its fields, stays under [`MAX_MESSAGE`].
+pub const MAX_CHUNK: usize = 64 * 1024;
 
 /// A message that can't be encoded or decoded.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -68,7 +68,7 @@ impl std::error::Error for WireError {}
 /// over [`MAX_MESSAGE`].
 pub fn encode<T: Serialize>(msg: &T, buf: &mut Vec<u8>) -> Result<(), WireError> {
     buf.clear();
-    serde_json::to_writer(&mut *buf, msg).map_err(|e| WireError::Encode(e.to_string()))?;
+    ciborium::into_writer(msg, &mut *buf).map_err(|e| WireError::Encode(e.to_string()))?;
     if buf.len() > MAX_MESSAGE {
         return Err(WireError::TooLarge(buf.len()));
     }
@@ -84,5 +84,5 @@ pub fn decode<T: DeserializeOwned>(packet: &[u8]) -> Result<T, WireError> {
     if packet.len() > MAX_MESSAGE {
         return Err(WireError::TooLarge(packet.len()));
     }
-    serde_json::from_slice(packet).map_err(|e| WireError::Decode(e.to_string()))
+    ciborium::from_reader(packet).map_err(|e| WireError::Decode(e.to_string()))
 }
