@@ -23,6 +23,7 @@ mod time;
     unused_imports,
     reason = "copied from ariel-sim, which lints it there"
 )]
+#[rustfmt::skip] // byte for byte ariel-sim's, formatted there
 mod wire;
 
 pub mod gpio;

@@ -44,9 +44,9 @@ mod base64url_serde {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Hello {
-    pub msg: HelloMsg,
+    pub msg:     HelloMsg,
     pub version: HelloVersion,
-    pub token: String,
+    pub token:   String,
 }
 
 impl Hello {
@@ -121,8 +121,8 @@ impl<'de> Deserialize<'de> for HelloVersion {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Idle {
-    pub msg: IdleMsg,
-    pub t: u64,
+    pub msg:       IdleMsg,
+    pub t:         u64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub next_wake: Option<u64>,
 }
@@ -207,14 +207,14 @@ impl PinConfigPull {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct PinConfig {
-    pub msg: PinConfigMsg,
-    pub t: u64,
-    pub pin: String,
-    pub dir: PinConfigDir,
+    pub msg:   PinConfigMsg,
+    pub t:     u64,
+    pub pin:   String,
+    pub dir:   PinConfigDir,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub level: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pull: Option<PinConfigPull>,
+    pub pull:  Option<PinConfigPull>,
 }
 
 impl PinConfig {
@@ -259,9 +259,9 @@ impl<'de> Deserialize<'de> for PinConfigMsg {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct PinSet {
-    pub msg: PinSetMsg,
-    pub t: u64,
-    pub pin: String,
+    pub msg:   PinSetMsg,
+    pub t:     u64,
+    pub pin:   String,
     pub level: bool,
 }
 
@@ -334,9 +334,9 @@ pub struct SpiOp {
         default,
         skip_serializing_if = "Option::is_none"
     )]
-    pub out: Option<Vec<u8>>,
+    pub out:  Option<Vec<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub len: Option<u64>,
+    pub len:  Option<u64>,
 }
 
 impl SpiOp {
@@ -352,10 +352,10 @@ impl SpiOp {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Spi {
     pub msg: SpiMsg,
-    pub t: u64,
+    pub t:   u64,
     pub bus: String,
-    pub hz: u64,
-    pub op: SpiOp,
+    pub hz:  u64,
+    pub op:  SpiOp,
 }
 
 impl Spi {
@@ -425,9 +425,9 @@ pub struct I2cOp {
         default,
         skip_serializing_if = "Option::is_none"
     )]
-    pub out: Option<Vec<u8>>,
+    pub out:  Option<Vec<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub len: Option<u64>,
+    pub len:  Option<u64>,
 }
 
 impl I2cOp {
@@ -452,12 +452,12 @@ pub fn decode_I2cOps(data: &[u8]) -> Result<I2cOps, serde_json::Error> {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct I2c {
-    pub msg: I2cMsg,
-    pub t: u64,
-    pub bus: String,
-    pub hz: u64,
+    pub msg:     I2cMsg,
+    pub t:       u64,
+    pub bus:     String,
+    pub hz:      u64,
     pub address: u64,
-    pub ops: I2cOps,
+    pub ops:     I2cOps,
 }
 
 impl I2c {
@@ -523,23 +523,23 @@ impl FlashOp {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Flash {
-    pub msg: FlashMsg,
-    pub t: u64,
-    pub op: FlashOp,
+    pub msg:    FlashMsg,
+    pub t:      u64,
+    pub op:     FlashOp,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub len: Option<u64>,
+    pub len:    Option<u64>,
     #[serde(
         with = "base64url_serde::option",
         default,
         skip_serializing_if = "Option::is_none"
     )]
-    pub data: Option<Vec<u8>>,
+    pub data:   Option<Vec<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub from: Option<u64>,
+    pub from:   Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub to: Option<u64>,
+    pub to:     Option<u64>,
 }
 
 impl Flash {
@@ -612,15 +612,15 @@ impl NodeMessage {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Start {
-    pub msg: StartMsg,
-    pub t: u64,
-    pub node: u64,
-    pub boot: u64,
+    pub msg:            StartMsg,
+    pub t:              u64,
+    pub node:           u64,
+    pub boot:           u64,
     #[serde(with = "base64url_serde")]
-    pub eui64: Vec<u8>,
-    pub rng_seed: u64,
+    pub eui64:          Vec<u8>,
+    pub rng_seed:       u64,
     pub storage_offset: u64,
-    pub storage_len: u64,
+    pub storage_len:    u64,
 }
 
 impl Start {
@@ -665,9 +665,9 @@ impl<'de> Deserialize<'de> for StartMsg {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Edge {
-    pub pin: String,
+    pub pin:   String,
     pub level: bool,
-    pub at: u64,
+    pub at:    u64,
 }
 
 impl Edge {
@@ -692,8 +692,8 @@ pub fn decode_Edges(data: &[u8]) -> Result<Edges, serde_json::Error> {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Advance {
-    pub msg: AdvanceMsg,
-    pub t: u64,
+    pub msg:   AdvanceMsg,
+    pub t:     u64,
     pub edges: Edges,
 }
 
@@ -739,8 +739,8 @@ impl<'de> Deserialize<'de> for AdvanceMsg {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Reply {
-    pub msg: ReplyMsg,
-    pub t: u64,
+    pub msg:   ReplyMsg,
+    pub t:     u64,
     pub edges: Edges,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub level: Option<bool>,
@@ -749,9 +749,9 @@ pub struct Reply {
         default,
         skip_serializing_if = "Option::is_none"
     )]
-    pub data: Option<Vec<u8>>,
+    pub data:  Option<Vec<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub nack: Option<u64>,
+    pub nack:  Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
 }
