@@ -45,6 +45,9 @@ pub mod spi;
 #[doc(hidden)]
 pub mod storage;
 
+#[cfg(feature = "uart")]
+pub mod uart;
+
 #[doc(hidden)]
 pub use executor::Executor;
 
@@ -92,7 +95,7 @@ macro_rules! sim_peripherals {
 sim_peripherals!(
     P0_00, P0_01, P0_02, P0_03, P0_04, P0_05, P0_06, P0_07, P0_08, P0_09, P0_10, P0_11, P0_12,
     P0_13, P0_14, P0_15, P0_16, P0_17, P0_18, P0_19, P0_20, P0_21, P0_22, P0_23, P0_24, P0_25,
-    P0_26, P0_27, P0_28, P0_29, P0_30, P0_31, SPI0, I2C0, FLASH,
+    P0_26, P0_27, P0_28, P0_29, P0_30, P0_31, SPI0, I2C0, FLASH, UART0, UART1,
 );
 
 /// The executor of this node.

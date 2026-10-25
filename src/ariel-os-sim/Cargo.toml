@@ -20,6 +20,7 @@ embassy-time-driver = { workspace = true }
 embassy-time-queue-utils = { workspace = true }
 embedded-hal = { workspace = true }
 embedded-hal-async = { workspace = true }
+embedded-io-async = { workspace = true, optional = true }
 embedded-storage-async = { workspace = true, optional = true }
 rand_chacha = { version = "0.9.0", default-features = false, optional = true }
 rand_core = { workspace = true, optional = true }
@@ -46,6 +47,8 @@ spi = ["ariel-os-embassy-common/spi"]
 storage = ["dep:embedded-storage-async"]
 ## Enables the time driver.
 time = []
+## Enables UART support.
+uart = ["dep:embedded-io-async", "ariel-os-embassy-common/uart"]
 
 [lints]
 workspace = true

@@ -14,11 +14,11 @@
 
 use core::cell::RefCell;
 use core::task::Waker;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::io::{Read as _, Write as _};
 
 use crate::wire::generated::{HelloMsg, HelloVersion, IdleMsg};
-use crate::wire::{Edge, Hello, Idle, KernelMessage, NodeMessage, Reply, Start};
+use crate::wire::{Edge, Hello, Idle, KernelMessage, NodeMessage, Reply, Start, UartRx};
 use critical_section::Mutex;
 use socket2::{Domain, SockAddr, Socket, Type};
 
@@ -37,6 +37,14 @@ struct PinState {
     /// Counts of rising and falling edges, so an edge wait can tell one happened.
     rising: u32,
     falling: u32,
+    wakers: Vec<Waker>,
+}
+
+/// An open UART's receive side: what the kernel delivered and the firmware hasn't read.
+struct UartState {
+    data: VecDeque<u8>,
+    /// The firmware's receive buffer size: bytes beyond it are lost, as on an overrun.
+    capacity: usize,
     wakers: Vec<Waker>,
 }
 
@@ -59,6 +67,8 @@ pub(crate) struct Kernel {
     /// The node's clock, in virtual nanoseconds.
     now: u64,
     pins: BTreeMap<&'static str, PinState>,
+    /// Open UARTs, by RX pin.
+    uarts: BTreeMap<&'static str, UartState>,
     pub(crate) timers: embassy_time_queue_utils::Queue,
     pub(crate) identity: Identity,
 }
@@ -99,6 +109,7 @@ pub(crate) fn connect() {
         buf: Vec::with_capacity(crate::wire::MAX_MESSAGE),
         now: 0,
         pins: BTreeMap::new(),
+        uarts: BTreeMap::new(),
         timers: embassy_time_queue_utils::Queue::new(),
         identity: Identity {
             node: 0,
@@ -185,16 +196,30 @@ impl Kernel {
     ///
     /// If the kernel refuses the request: that is a bug in the board or this HAL.
     pub(crate) fn request(&mut self, msg: &NodeMessage) -> Reply {
+        match self.try_request(msg) {
+            Ok(reply) => reply,
+            Err(error) => panic!("ariel-sim: the kernel refused a request: {error}"),
+        }
+    }
+
+    /// As [`Self::request`], returning the kernel's refusal instead of panicking (a UART
+    /// the board doesn't have is the app's configuration error).
+    ///
+    /// # Errors
+    ///
+    /// The kernel's reason for refusing the request.
+    pub(crate) fn try_request(&mut self, msg: &NodeMessage) -> Result<Reply, String> {
         self.send(msg);
         let KernelMessage::Reply(reply) = self.recv() else {
             panic!("ariel-sim: expected a reply from the kernel");
         };
-        if let Some(error) = &reply.error {
-            panic!("ariel-sim: the kernel refused a request: {error}");
-        }
         self.now = self.now.max(reply.t);
         self.apply(&reply.edges);
-        reply
+        self.apply_uart(&reply.uart);
+        match &reply.error {
+            Some(error) => Err(error.clone()),
+            None => Ok(reply),
+        }
     }
 
     /// Tells the kernel nothing is ready to run, and waits until it says to go on.
@@ -211,6 +236,63 @@ impl Kernel {
         };
         self.now = self.now.max(advance.t);
         self.apply(&advance.edges);
+        self.apply_uart(&advance.uart);
+    }
+
+    fn apply_uart(&mut self, rxs: &[UartRx]) {
+        for rx in rxs {
+            let Some(u) = self.uarts.get_mut(rx.rx.as_str()) else {
+                continue;
+            };
+            let room = u.capacity.saturating_sub(u.data.len());
+            u.data.extend(rx.data.iter().take(room));
+            for w in u.wakers.drain(..) {
+                w.wake();
+            }
+        }
+    }
+
+    /// Starts receiving on an opened UART, with the firmware's buffer size.
+    pub(crate) fn uart_opened(&mut self, rx: &'static str, capacity: usize) {
+        self.uarts.insert(
+            rx,
+            UartState {
+                data: VecDeque::new(),
+                capacity: capacity.max(1),
+                wakers: Vec::new(),
+            },
+        );
+    }
+
+    /// Stops receiving on a UART (its driver was dropped).
+    pub(crate) fn uart_closed(&mut self, rx: &'static str) {
+        self.uarts.remove(rx);
+    }
+
+    /// Moves received bytes into `buf`; how many.
+    pub(crate) fn uart_take(&mut self, rx: &'static str, buf: &mut [u8]) -> usize {
+        let Some(u) = self.uarts.get_mut(rx) else {
+            return 0;
+        };
+        let n = buf.len().min(u.data.len());
+        for (b, d) in buf.iter_mut().zip(u.data.drain(..n)) {
+            *b = d;
+        }
+        n
+    }
+
+    /// Bytes received and not yet read.
+    pub(crate) fn uart_available(&self, rx: &'static str) -> usize {
+        self.uarts.get(rx).map_or(0, |u| u.data.len())
+    }
+
+    /// Wakes `waker` when bytes arrive on the UART.
+    pub(crate) fn wake_on_uart(&mut self, rx: &'static str, waker: &Waker) {
+        if let Some(u) = self.uarts.get_mut(rx)
+            && !u.wakers.iter().any(|w| w.will_wake(waker))
+        {
+            u.wakers.push(waker.clone());
+        }
     }
 
     fn apply(&mut self, edges: &[Edge]) {

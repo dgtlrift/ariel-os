@@ -177,13 +177,13 @@ impl<'de> Deserialize<'de> for HelloMsg {
     }
 }
 
-/// Always the literal `1`.
+/// Always the literal `2`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct HelloVersion;
 
 impl HelloVersion {
     /// The literal value.
-    pub const VALUE: u64 = 1;
+    pub const VALUE: u64 = 2;
 }
 
 impl Serialize for HelloVersion {
@@ -670,6 +670,128 @@ impl<'de> Deserialize<'de> for FlashMsg {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub enum UartOpenParity {
+    #[default]
+    #[serde(rename = "none")]
+    None,
+    #[serde(rename = "even")]
+    Even,
+    #[serde(rename = "odd")]
+    Odd,
+}
+
+impl UartOpenParity {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct UartOpen {
+    pub msg:       UartOpenMsg,
+    pub t:         u64,
+    pub tx:        String,
+    pub rx:        String,
+    pub baud:      u64,
+    pub data_bits: u64,
+    pub parity:    UartOpenParity,
+    pub stop_bits: u64,
+}
+
+impl UartOpen {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+/// Always the literal `"uart-open"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct UartOpenMsg;
+
+impl UartOpenMsg {
+    /// The literal value.
+    pub const VALUE: &'static str = "uart-open";
+}
+
+impl Serialize for UartOpenMsg {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        Self::VALUE.serialize(s)
+    }
+}
+
+impl<'de> Deserialize<'de> for UartOpenMsg {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let v = <String>::deserialize(d)?;
+        if v == Self::VALUE {
+            Ok(Self)
+        } else {
+            Err(serde::de::Error::custom(format!(
+                "expected {:?}, found {:?}",
+                Self::VALUE,
+                v
+            )))
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct UartWrite {
+    pub msg:  UartWriteMsg,
+    pub t:    u64,
+    pub tx:   String,
+    #[serde(with = "base64url_serde")]
+    pub data: Vec<u8>,
+}
+
+impl UartWrite {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+/// Always the literal `"uart-write"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct UartWriteMsg;
+
+impl UartWriteMsg {
+    /// The literal value.
+    pub const VALUE: &'static str = "uart-write";
+}
+
+impl Serialize for UartWriteMsg {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        Self::VALUE.serialize(s)
+    }
+}
+
+impl<'de> Deserialize<'de> for UartWriteMsg {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let v = <String>::deserialize(d)?;
+        if v == Self::VALUE {
+            Ok(Self)
+        } else {
+            Err(serde::de::Error::custom(format!(
+                "expected {:?}, found {:?}",
+                Self::VALUE,
+                v
+            )))
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum NodeMessage {
@@ -680,6 +802,8 @@ pub enum NodeMessage {
     Spi(Spi),
     I2c(I2c),
     Flash(Flash),
+    UartOpen(UartOpen),
+    UartWrite(UartWrite),
 }
 
 impl Default for NodeMessage {
@@ -779,10 +903,39 @@ pub fn decode_Edges(data: &[u8]) -> Result<Edges, serde_json::Error> {
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct UartRx {
+    pub rx:   String,
+    pub at:   u64,
+    #[serde(with = "base64url_serde")]
+    pub data: Vec<u8>,
+}
+
+impl UartRx {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+pub type UartRxs = Vec<UartRx>;
+
+pub fn encode_UartRxs(val: &UartRxs) -> Vec<u8> {
+    serde_json::to_vec(val).expect("encode")
+}
+
+pub fn decode_UartRxs(data: &[u8]) -> Result<UartRxs, serde_json::Error> {
+    serde_json::from_slice(data)
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Advance {
     pub msg:   AdvanceMsg,
     pub t:     u64,
     pub edges: Edges,
+    pub uart:  UartRxs,
 }
 
 impl Advance {
@@ -830,6 +983,7 @@ pub struct Reply {
     pub msg:   ReplyMsg,
     pub t:     u64,
     pub edges: Edges,
+    pub uart:  UartRxs,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub level: Option<bool>,
     #[serde(
