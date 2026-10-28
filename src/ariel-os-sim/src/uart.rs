@@ -144,6 +144,76 @@ impl From<ariel_os_embassy_common::uart::Parity<Self>> for Parity {
     }
 }
 
+/// Opens the simulator's UART on these pins (`uart-open`) and starts receiving into a
+/// buffer of `capacity` bytes.
+///
+/// # Errors
+///
+/// [`ConfigError::ConfigurationNotSupported`] if the board has no UART on these pins
+/// or the line can't take the framing.
+pub(crate) fn open(
+    tx: &'static str,
+    rx: &'static str,
+    capacity: usize,
+    baud: u32,
+    data_bits: u64,
+    parity: UartOpenParity,
+    stop_bits: u64,
+) -> Result<(), ConfigError> {
+    kernel::with(|k| {
+        let msg = NodeMessage::UartOpen(UartOpen {
+            msg: UartOpenMsg,
+            t: k.now(),
+            tx: tx.into(),
+            rx: rx.into(),
+            baud: u64::from(baud),
+            data_bits,
+            parity,
+            stop_bits,
+        });
+        k.try_request(&msg)
+            .map_err(|_| ConfigError::ConfigurationNotSupported)?;
+        k.uart_opened(rx, capacity);
+        Ok(())
+    })
+}
+
+/// Reads what has arrived on `rx`, waiting for at least one byte.
+pub(crate) async fn read(rx: &'static str, buf: &mut [u8]) -> usize {
+    if buf.is_empty() {
+        return 0;
+    }
+    core::future::poll_fn(|cx| {
+        kernel::with(|k| match k.uart_take(rx, buf) {
+            0 => {
+                k.wake_on_uart(rx, cx.waker());
+                Poll::Pending
+            }
+            n => Poll::Ready(n),
+        })
+    })
+    .await
+}
+
+/// Sends up to [`MAX_CHUNK`] bytes on `tx` (`uart-write`): the node's clock moves on by
+/// their time on the line. How many were sent.
+pub(crate) fn write(tx: &'static str, buf: &[u8]) -> usize {
+    let n = buf.len().min(MAX_CHUNK);
+    if n == 0 {
+        return 0;
+    }
+    kernel::with(|k| {
+        let t = k.now();
+        k.request(&NodeMessage::UartWrite(UartWrite {
+            msg: UartWriteMsg,
+            t,
+            tx: tx.into(),
+            data: buf.get(..n).unwrap_or_default().to_vec(),
+        }));
+    });
+    n
+}
+
 /// One open simulated UART, by its pins.
 pub struct SimUart<'d> {
     tx: &'static str,
@@ -152,48 +222,40 @@ pub struct SimUart<'d> {
 }
 
 impl SimUart<'_> {
-    /// Sends `uart-open` and starts receiving.
+    /// Opens the UART with the app's configuration.
     ///
     /// # Errors
     ///
-    /// [`ConfigError::ConfigurationNotSupported`] if the board has no UART on these pins
-    /// or the line can't take the framing.
+    /// As [`open`].
     fn open(
         tx: &'static str,
         rx: &'static str,
         rx_buffer: &mut [u8],
         config: Config,
     ) -> Result<Self, ConfigError> {
-        let msg = NodeMessage::UartOpen(UartOpen {
-            msg: UartOpenMsg,
-            t: kernel::with(|k| k.now()),
-            tx: tx.into(),
-            rx: rx.into(),
-            baud: u64::from(baud(config.baudrate)),
-            data_bits: match config.data_bits {
+        open(
+            tx,
+            rx,
+            rx_buffer.len(),
+            baud(config.baudrate),
+            match config.data_bits {
                 DataBits::Data7 => 7,
                 DataBits::Data8 => 8,
             },
-            parity: match config.parity {
+            match config.parity {
                 Parity::None => UartOpenParity::None,
                 Parity::Even => UartOpenParity::Even,
                 Parity::Odd => UartOpenParity::Odd,
             },
-            stop_bits: match config.stop_bits {
+            match config.stop_bits {
                 StopBits::Stop1 => 1,
                 StopBits::Stop2 => 2,
             },
-        });
-        let capacity = rx_buffer.len();
-        kernel::with(|k| {
-            k.try_request(&msg)
-                .map_err(|_| ConfigError::ConfigurationNotSupported)?;
-            k.uart_opened(rx, capacity);
-            Ok(Self {
-                tx,
-                rx,
-                _buffers: PhantomData,
-            })
+        )?;
+        Ok(Self {
+            tx,
+            rx,
+            _buffers: PhantomData,
         })
     }
 }
@@ -210,20 +272,7 @@ impl embedded_io_async::ErrorType for SimUart<'_> {
 
 impl embedded_io_async::Read for SimUart<'_> {
     async fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
-        if buf.is_empty() {
-            return Ok(0);
-        }
-        let rx = self.rx;
-        Ok(core::future::poll_fn(|cx| {
-            kernel::with(|k| match k.uart_take(rx, buf) {
-                0 => {
-                    k.wake_on_uart(rx, cx.waker());
-                    Poll::Pending
-                }
-                n => Poll::Ready(n),
-            })
-        })
-        .await)
+        Ok(read(self.rx, buf).await)
     }
 }
 
@@ -239,20 +288,7 @@ impl embedded_io_async::Write for SimUart<'_> {
         reason = "the kernel answers before the request returns (lockstep)"
     )]
     async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
-        let n = buf.len().min(MAX_CHUNK);
-        if n == 0 {
-            return Ok(0);
-        }
-        kernel::with(|k| {
-            let t = k.now();
-            k.request(&NodeMessage::UartWrite(UartWrite {
-                msg: UartWriteMsg,
-                t,
-                tx: self.tx.into(),
-                data: buf.get(..n).unwrap_or_default().to_vec(),
-            }));
-        });
-        Ok(n)
+        Ok(write(self.tx, buf))
     }
 
     #[expect(
@@ -260,7 +296,6 @@ impl embedded_io_async::Write for SimUart<'_> {
         reason = "a write returns when its last byte has left"
     )]
     async fn flush(&mut self) -> Result<(), Self::Error> {
-        // A write returns when its last byte has left: nothing is ever pending.
         Ok(())
     }
 }

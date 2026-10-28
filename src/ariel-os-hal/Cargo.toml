@@ -111,6 +111,7 @@ ble = [
   "dep:embedded-io",
   "ariel-os-embassy-common/ble",
   "ariel-os-nrf/ble",
+  "ariel-os-sim/ble",
 ]
 ble-cyw43 = ["ariel-os-rp/ble-cyw43", "ble"]
 ble-esp = ["ariel-os-esp/ble-esp", "ble"]

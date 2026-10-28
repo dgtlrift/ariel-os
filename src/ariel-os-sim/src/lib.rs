@@ -26,6 +26,9 @@ mod time;
 #[rustfmt::skip] // byte for byte ariel-sim's, formatted there
 mod wire;
 
+#[cfg(feature = "ble")]
+pub mod ble;
+
 pub mod gpio;
 
 #[cfg(feature = "hwrng")]
