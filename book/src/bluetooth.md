@@ -37,6 +37,16 @@ To set an address that will persist across reboots, use the `ble-config-static-a
 > [!NOTE]
 > The address will be advertised as a [random static address](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/low-energy-controller/link-layer-specification.html#UUID-7edea27a-a47f-8436-4bd7-aedc1945c366_figure-idm4497995733171233616486354268) and the two most significant bits of the address will therefore be set to 1.
 
+### Connection Limits
+
+The stack's limits are set at build time through environment variables:
+
+- `CONFIG_BLE_MAX_CONNS`: how many connections it holds at once, in either role (default 1).
+- `CONFIG_BLE_MAX_CHANNELS`: how many L2CAP channels it holds, not counting GATT (default 1).
+- `CONFIG_BLE_MTU`: the MTU of its connections, 27 to 251 (default 27).
+
+A node that is central and peripheral at once, as in a mesh, needs `CONFIG_BLE_MAX_CONNS` of at least 2.
+
 ## Using the BLE Stack
 
 To use BLE in your application, you need to get the pre-configured stack and build the host instance from it:
