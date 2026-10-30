@@ -346,16 +346,28 @@ macro_rules! define_uart_drivers {
     };
 }
 
-#[cfg(not(context = "nrf52840"))]
+#[cfg(sim_chip = "generic")]
 define_uart_drivers!(UART0, UART1);
-#[cfg(context = "nrf52840")]
+#[cfg(sim_chip = "nrf52840")]
 define_uart_drivers!(UARTE0, UARTE1);
+#[cfg(sim_chip = "esp32")]
+define_uart_drivers!(UART0, UART1, UART2);
+#[cfg(sim_chip = "esp32s2")]
+define_uart_drivers!(UART0, UART1);
+#[cfg(sim_chip = "esp32s3")]
+define_uart_drivers!(UART0, UART1, UART2);
 
 #[doc(hidden)]
 pub fn init(peripherals: &mut crate::OptionalPeripherals) {
     // Drivers are created from the peripheral type; keep the singletons from other uses.
-    #[cfg(not(context = "nrf52840"))]
+    #[cfg(sim_chip = "generic")]
     let _ = (peripherals.UART0.take(), peripherals.UART1.take());
-    #[cfg(context = "nrf52840")]
+    #[cfg(sim_chip = "nrf52840")]
     let _ = (peripherals.UARTE0.take(), peripherals.UARTE1.take());
+    #[cfg(sim_chip = "esp32")]
+    let _ = (peripherals.UART0.take(), peripherals.UART1.take(), peripherals.UART2.take());
+    #[cfg(sim_chip = "esp32s2")]
+    let _ = (peripherals.UART0.take(), peripherals.UART1.take());
+    #[cfg(sim_chip = "esp32s3")]
+    let _ = (peripherals.UART0.take(), peripherals.UART1.take(), peripherals.UART2.take());
 }

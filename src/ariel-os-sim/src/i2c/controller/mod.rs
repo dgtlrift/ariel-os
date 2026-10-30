@@ -137,10 +137,16 @@ macro_rules! define_i2c_drivers {
     };
 }
 
-#[cfg(not(context = "nrf52840"))]
+#[cfg(sim_chip = "generic")]
 define_i2c_drivers!(I2C0);
-#[cfg(context = "nrf52840")]
+#[cfg(sim_chip = "nrf52840")]
 define_i2c_drivers!(TWISPI0, TWISPI1);
+#[cfg(sim_chip = "esp32")]
+define_i2c_drivers!(I2C0, I2C1);
+#[cfg(sim_chip = "esp32s2")]
+define_i2c_drivers!(I2C0, I2C1);
+#[cfg(sim_chip = "esp32s3")]
+define_i2c_drivers!(I2C0, I2C1);
 
 impl embedded_hal_async::i2c::ErrorType for I2c {
     type Error = Error;

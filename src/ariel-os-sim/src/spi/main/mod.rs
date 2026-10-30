@@ -146,11 +146,17 @@ macro_rules! define_spi_drivers {
     };
 }
 
-#[cfg(not(context = "nrf52840"))]
+#[cfg(sim_chip = "generic")]
 define_spi_drivers!(SPI0);
 // As Ariel's nRF HAL: SPIM3 as `SPI3`.
-#[cfg(context = "nrf52840")]
+#[cfg(sim_chip = "nrf52840")]
 define_spi_drivers!(SPI3);
+#[cfg(sim_chip = "esp32")]
+define_spi_drivers!(SPI2, SPI3);
+#[cfg(sim_chip = "esp32s2")]
+define_spi_drivers!(SPI2, SPI3);
+#[cfg(sim_chip = "esp32s3")]
+define_spi_drivers!(SPI2, SPI3);
 
 impl embedded_hal_async::spi::ErrorType for Spi {
     type Error = core::convert::Infallible;

@@ -18,7 +18,7 @@ embedded-alloc = { version = "0.6.0", default-features = false, features = [
   "tlsf",
 ] }
 
-[target.'cfg(context = "esp")'.dependencies]
+[target.'cfg(all(context = "esp", not(sim_hardware)))'.dependencies]
 esp-alloc = { workspace = true, default-features = false, features = [
   "compat",
   "global-allocator",

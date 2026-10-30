@@ -93,7 +93,7 @@ macro_rules! define_peripherals {
 // to add a check-cfg for `esp`.
 // These macros are not importable from applications as they are not part of the re-exported
 // `ariel_os_hal::api`.
-#[cfg(not(context = "esp"))]
+#[cfg(not(all(context = "esp", not(sim_hardware))))]
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __peripheral_ty {
@@ -102,7 +102,7 @@ macro_rules! __peripheral_ty {
     };
 }
 
-#[cfg(context = "esp")]
+#[cfg(all(context = "esp", not(sim_hardware)))]
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __peripheral_ty {
@@ -115,7 +115,7 @@ macro_rules! __peripheral_ty {
 // itself and not the embassy hal `Peri` wrapper. For `esp-hal` however, it does alias the
 // peripheral with its lifetime parameter, as there is no distinction between a peripheral and the
 // exclusive access to it, making it identical to `__peripheral_ty!()`.
-#[cfg(not(context = "esp"))]
+#[cfg(not(all(context = "esp", not(sim_hardware))))]
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __peripheral_alias_ty {
@@ -124,7 +124,7 @@ macro_rules! __peripheral_alias_ty {
     };
 }
 
-#[cfg(context = "esp")]
+#[cfg(all(context = "esp", not(sim_hardware)))]
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __peripheral_alias_ty {

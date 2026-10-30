@@ -97,16 +97,16 @@ macro_rules! sim_peripherals {
 
 // D40: a board built with `sim-hardware` whose chip has no sim version fails here, by
 // name, rather than on the first peripheral its board code names.
-#[cfg(all(sim_hardware, not(any(context = "sim", context = "nrf52840"))))]
+#[cfg(sim_chip = "unsupported")]
 compile_error!(
-    "ariel-sim: this board's chip has no sim version yet (chips with one: nrf52840); \
-     see dgtlrift/ariel-sim docs/d40.md"
+    "ariel-sim: this board's chip has no sim version yet (chips with one: nrf52840, esp32, \
+     esp32s2, esp32s3); see dgtlrift/ariel-sim docs/d40.md"
 );
 
 // The chip's peripherals by their real names (D40): a board's SBD-generated code names
 // them as on hardware. The context of a board built with `sim-hardware` picks the chip;
 // the `sim` board has generic names.
-#[cfg(not(context = "nrf52840"))]
+#[cfg(sim_chip = "generic")]
 sim_peripherals!(
     P0_00, P0_01, P0_02, P0_03, P0_04, P0_05, P0_06, P0_07, P0_08, P0_09, P0_10, P0_11, P0_12,
     P0_13, P0_14, P0_15, P0_16, P0_17, P0_18, P0_19, P0_20, P0_21, P0_22, P0_23, P0_24, P0_25,
@@ -114,13 +114,40 @@ sim_peripherals!(
 );
 // The nRF52840: ports 0 and 1, and the serial peripherals as Ariel's nRF HAL names them.
 // Its BLE radio is inside the chip, so it takes no board UART (`ble`).
-#[cfg(context = "nrf52840")]
+#[cfg(sim_chip = "nrf52840")]
 sim_peripherals!(
     P0_00, P0_01, P0_02, P0_03, P0_04, P0_05, P0_06, P0_07, P0_08, P0_09, P0_10, P0_11, P0_12,
     P0_13, P0_14, P0_15, P0_16, P0_17, P0_18, P0_19, P0_20, P0_21, P0_22, P0_23, P0_24, P0_25,
     P0_26, P0_27, P0_28, P0_29, P0_30, P0_31, P1_00, P1_01, P1_02, P1_03, P1_04, P1_05, P1_06,
     P1_07, P1_08, P1_09, P1_10, P1_11, P1_12, P1_13, P1_14, P1_15, UARTE0, UARTE1, TWISPI0,
     TWISPI1, SPI3, FLASH,
+);
+
+// The ESP32: its GPIOs, and the serial peripherals as Ariel's ESP HAL names them.
+#[cfg(sim_chip = "esp32")]
+sim_peripherals!(
+    GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5, GPIO6, GPIO7, GPIO8, GPIO9, GPIO10, GPIO11,
+    GPIO12, GPIO13, GPIO14, GPIO15, GPIO16, GPIO17, GPIO18, GPIO19, GPIO21, GPIO22, GPIO23,
+    GPIO25, GPIO26, GPIO27, GPIO32, GPIO33, GPIO34, GPIO35, GPIO36, GPIO37, GPIO38, GPIO39,
+    UART0, UART1, UART2, I2C0, I2C1, SPI2, SPI3, FLASH,
+);
+// The ESP32-S2: its GPIOs, and the serial peripherals as Ariel's ESP HAL names them.
+#[cfg(sim_chip = "esp32s2")]
+sim_peripherals!(
+    GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5, GPIO6, GPIO7, GPIO8, GPIO9, GPIO10, GPIO11,
+    GPIO12, GPIO13, GPIO14, GPIO15, GPIO16, GPIO17, GPIO18, GPIO19, GPIO20, GPIO21, GPIO26,
+    GPIO27, GPIO28, GPIO29, GPIO30, GPIO31, GPIO32, GPIO33, GPIO34, GPIO35, GPIO36, GPIO37,
+    GPIO38, GPIO39, GPIO40, GPIO41, GPIO42, GPIO43, GPIO44, GPIO45, GPIO46, UART0, UART1,
+    I2C0, I2C1, SPI2, SPI3, FLASH,
+);
+// The ESP32-S3: its GPIOs, and the serial peripherals as Ariel's ESP HAL names them.
+#[cfg(sim_chip = "esp32s3")]
+sim_peripherals!(
+    GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5, GPIO6, GPIO7, GPIO8, GPIO9, GPIO10, GPIO11,
+    GPIO12, GPIO13, GPIO14, GPIO15, GPIO16, GPIO17, GPIO18, GPIO19, GPIO20, GPIO21, GPIO26,
+    GPIO27, GPIO28, GPIO29, GPIO30, GPIO31, GPIO32, GPIO33, GPIO34, GPIO35, GPIO36, GPIO37,
+    GPIO38, GPIO39, GPIO40, GPIO41, GPIO42, GPIO43, GPIO44, GPIO45, GPIO46, GPIO47, GPIO48,
+    UART0, UART1, UART2, I2C0, I2C1, SPI2, SPI3, FLASH,
 );
 
 /// The executor of this node.

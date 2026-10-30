@@ -30,9 +30,9 @@ mod alloc {
         unsafe {
             #[cfg(context = "cortex-m")]
             init_embedded_alloc();
-            #[cfg(context = "esp")]
+            #[cfg(all(context = "esp", not(sim_hardware)))]
             init_esp_alloc();
-            #[cfg(not(any(context = "cortex-m", context = "esp")))]
+            #[cfg(not(any(context = "cortex-m", all(context = "esp", not(sim_hardware)))))]
             init_none();
         }
     }
@@ -76,7 +76,7 @@ mod alloc {
     /// # Safety
     ///
     /// Call only once!
-    #[cfg(context = "esp")]
+    #[cfg(all(context = "esp", not(sim_hardware)))]
     unsafe fn init_esp_alloc() {
         use ariel_os_log::debug;
 
@@ -117,7 +117,7 @@ mod alloc {
     /// # Safety
     ///
     /// Not actually unsafe but we don't want the caller to get in trouble.
-    #[cfg(not(any(context = "esp", context = "cortex-m")))]
+    #[cfg(not(any(all(context = "esp", not(sim_hardware)), context = "cortex-m")))]
     unsafe fn init_none() {
         // mark used
         let _ = CONFIG_HEAPSIZE;

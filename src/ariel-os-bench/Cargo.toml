@@ -12,7 +12,7 @@ defmt = { workspace = true, optional = true }
 [target.'cfg(context = "cortex-m")'.dependencies]
 cortex-m = { workspace = true }
 
-[target.'cfg(context = "esp")'.dependencies]
+[target.'cfg(all(context = "esp", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true }
 
 [features]

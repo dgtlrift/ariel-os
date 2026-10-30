@@ -11,7 +11,7 @@ use bt_hci::transport::SerialTransport;
 use embassy_executor::Spawner;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 
-#[cfg(not(context = "nrf52840"))]
+#[cfg(not(any(sim_chip = "nrf52840", sim_chip = "esp32", sim_chip = "esp32s3")))]
 use crate::gpio::Pin;
 use crate::uart;
 use crate::wire::UartOpenParity;
@@ -66,7 +66,7 @@ pub type BleController = ExternalController<SerialTransport<NoopRawMutex, HciRx,
 
 /// The HCI line of a chip whose radio is inside it (D40): no board UART or pins, so the
 /// simulator's controller sits where the chip's link layer would.
-#[cfg(context = "nrf52840")]
+#[cfg(any(sim_chip = "nrf52840", sim_chip = "esp32", sim_chip = "esp32s3"))]
 const INTERNAL_HCI: (&str, &str) = ("HCI_RX", "HCI_TX");
 
 /// Opens the chip's internal HCI line at 1 Mbaud, 8N1, to the controller (D40).
@@ -74,7 +74,7 @@ const INTERNAL_HCI: (&str, &str) = ("HCI_RX", "HCI_TX");
 /// # Panics
 ///
 /// If the simulator has no BLE controller on it.
-#[cfg(context = "nrf52840")]
+#[cfg(any(sim_chip = "nrf52840", sim_chip = "esp32", sim_chip = "esp32s3"))]
 #[must_use]
 pub fn build_controller(
     _peripherals: &mut crate::OptionalPeripherals,
@@ -91,7 +91,7 @@ pub fn build_controller(
 /// # Panics
 ///
 /// If the board has no BLE controller on UART1, or UART1 was taken.
-#[cfg(not(context = "nrf52840"))]
+#[cfg(not(any(sim_chip = "nrf52840", sim_chip = "esp32", sim_chip = "esp32s3")))]
 #[must_use]
 pub fn build_controller(
     peripherals: &mut crate::OptionalPeripherals,

@@ -22,29 +22,29 @@ static_cell = { workspace = true }
 
 defmt = { workspace = true, optional = true }
 
-[target.'cfg(context = "esp32")'.dependencies]
+[target.'cfg(all(context = "esp32", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, features = ["esp32"] }
 
 [target.'cfg(context = "xtensa")'.dependencies]
 xtensa-lx-rt = { workspace = true, features = ["float-save-restore"] }
 
-[target.'cfg(context = "esp32c2")'.dependencies]
+[target.'cfg(all(context = "esp32c2", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, features = ["esp32c2"] }
 
-[target.'cfg(context = "esp32c3")'.dependencies]
+[target.'cfg(all(context = "esp32c3", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, features = ["esp32c3"] }
 
-[target.'cfg(context = "esp32c6")'.dependencies]
+[target.'cfg(all(context = "esp32c6", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, features = ["esp32c6"] }
 
-[target.'cfg(context = "esp32h2")'.dependencies]
+[target.'cfg(all(context = "esp32h2", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, features = ["esp32h2"] }
 
-[target.'cfg(context = "esp32s2")'.dependencies]
+[target.'cfg(all(context = "esp32s2", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, features = ["esp32s2"] }
 static_cell = { workspace = true, optional = true }
 
-[target.'cfg(context = "esp32s3")'.dependencies]
+[target.'cfg(all(context = "esp32s3", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, features = ["esp32s3"] }
 static_cell = { workspace = true, optional = true }
 

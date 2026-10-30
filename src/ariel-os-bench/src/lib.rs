@@ -9,7 +9,7 @@ cfg_select! {
         mod cortexm;
         use cortexm as bench;
     }
-    context = "esp" => {
+    all(context = "esp", not(sim_hardware)) => {
         mod esp;
         use esp as bench;
     }

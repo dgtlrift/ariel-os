@@ -59,7 +59,7 @@ cfg_select! {
         mod rp;
         pub use rp::Chip;
     }
-    context = "esp32s3" => {
+    all(context = "esp32s3", not(sim_hardware)) => {
         mod esp32s3;
         pub use esp32s3::Chip;
     }

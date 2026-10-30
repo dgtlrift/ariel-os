@@ -38,7 +38,7 @@ portable-atomic = { workspace = true, features = ["critical-section"] }
 [target.'cfg(context = "rp")'.dependencies]
 embassy-rp = { workspace = true }
 
-[target.'cfg(context = "esp")'.dependencies]
+[target.'cfg(all(context = "esp", not(sim_hardware)))'.dependencies]
 esp-hal = { workspace = true, default-features = false }
 portable-atomic = { workspace = true }
 

@@ -460,9 +460,11 @@ contexts:
       - has_hwrng
     env:
       esp_wifi_heapsize_required: $(72*1024)
+      # A variable, so sim-hardware can clear it (ariel-sim, D40).
+      ESP_LINKALL: -Clink-arg=-Tlinkall.x
       RUSTFLAGS:
         # linkall first
-        - -Clink-arg=-Tlinkall.x
+        - ${ESP_LINKALL}
 
   - name: esp32
     parent: esp
@@ -592,8 +594,10 @@ contexts:
     parent: esp
     selects:
       - xtensa
-      - has_wifi_esp
     provides:
+      # Provided, as esp32 and esp32s3 do: selecting it reached `doc-only`, which
+      # doesn't exist, so no ESP32-S2 build configured (ariel-sim, D40).
+      - has_wifi_esp
       - sw/benchmark
     provides_unique: [c-function-abort]
     env:
@@ -1016,6 +1020,9 @@ modules:
       - probe-rs
       - logging-over-uart
       - debug-uart
+      # The Xtensa toolchain and target, and the ESP flasher.
+      - xtensa-target
+      - espflash
       # Not on sim-chip (one host thread).
       - infini-core
       - sw/threading
@@ -1026,11 +1033,14 @@ modules:
     selects:
       - sim-critical-section
       - sim-logging-over-stdout
+      - sim-executor
     env:
       global:
         RUSTC_TARGET: x86_64-unknown-linux-gnu
         CARGO_TARGET_PREFIX: CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU
         CARGO_RUNNER: '"sh -c"'
+        # The esp context's linker script.
+        ESP_LINKALL: ""
         RUSTFLAGS:
           - --cfg sim_hardware
           - --cfg context=\"sim-chip\"
@@ -1173,6 +1183,16 @@ modules:
           - --cfg context=\"cortex-m33f\"
 
   - name: xtensa
+    context:
+      - esp32
+      - esp32s2
+      - esp32s3
+    selects:
+      # Optional, so sim-hardware can disable it (ariel-sim, D40).
+      - ?xtensa-target
+
+  - name: xtensa-target
+    help: 'private: the Xtensa toolchain, target settings and threads, selected by xtensa'
     context:
       - esp32
       - esp32s2
@@ -2211,6 +2231,18 @@ modules:
   - name: has_multi_core_support
     selects:
       - doc-only
+
+  - name: sim-executor
+    help: |
+      'private: the sim HAL's executor under sim-hardware: Ariel's interrupt executor API,
+      run on the simulator's clock, which needs no software interrupt (has_swi) from the
+      chip'
+    provides_unique:
+      - executor
+    env:
+      global:
+        FEATURES:
+          - ariel-os/executor-interrupt
 
   - name: sim-critical-section
     help: the host critical section of the sim HAL (one thread), under sim-hardware

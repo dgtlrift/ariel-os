@@ -171,7 +171,7 @@ pub(crate) fn init() {
         hal::EXECUTOR.spawner().spawn(init_task(p).unwrap());
     }
 
-    #[cfg(context = "esp")]
+    #[cfg(all(context = "esp", not(sim_hardware)))]
     EXECUTOR.run(|spawner| spawner.spawn(init_task(p)));
 
     // The simulated chip's executor runs here for the rest of the process, in lockstep
