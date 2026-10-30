@@ -95,6 +95,14 @@ macro_rules! sim_peripherals {
     };
 }
 
+// D40: a board built with `sim-hardware` whose chip has no sim version fails here, by
+// name, rather than on the first peripheral its board code names.
+#[cfg(all(sim_hardware, not(any(context = "sim", context = "nrf52840"))))]
+compile_error!(
+    "ariel-sim: this board's chip has no sim version yet (chips with one: nrf52840); \
+     see dgtlrift/ariel-sim docs/d40.md"
+);
+
 // The chip's peripherals by their real names (D40): a board's SBD-generated code names
 // them as on hardware. The context of a board built with `sim-hardware` picks the chip;
 // the `sim` board has generic names.
