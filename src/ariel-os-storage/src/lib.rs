@@ -40,7 +40,7 @@ const MARKER_VALUE: u8 = 0;
 /// flash driver address map.
 #[cfg(not(context = "sim-chip"))]
 fn flash_range_from_linker() -> Range<u32> {
-    #[cfg(all(context = "nrf", not(context = "nrf5340-net")))]
+    #[cfg(all(all(context = "nrf", not(sim_hardware)), not(context = "nrf5340-net")))]
     const OFFSET: usize = 0x0;
     #[cfg(context = "nrf5340-net")]
     const OFFSET: usize = 0x0100_0000;

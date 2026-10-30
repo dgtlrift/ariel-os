@@ -59,7 +59,7 @@ embassy-executor = { workspace = true, default-features = false, features = [
 ] }
 
 # Required for debug-over-uart.
-[target.'cfg(context = "nrf")'.dependencies]
+[target.'cfg(all(context = "nrf", not(sim_hardware)))'.dependencies]
 embassy-nrf = { workspace = true }
 embedded-io-async = { workspace = true }
 

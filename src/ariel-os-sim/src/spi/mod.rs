@@ -6,5 +6,5 @@ pub mod main;
 #[doc(hidden)]
 pub fn init(peripherals: &mut crate::OptionalPeripherals) {
     // Drivers are created from the peripheral type; keep the singleton from other uses.
-    let _ = peripherals.SPI0.take();
+    main::take_all(peripherals);
 }

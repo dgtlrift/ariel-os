@@ -33,6 +33,12 @@ impl_pins!(
     P0_13, P0_14, P0_15, P0_16, P0_17, P0_18, P0_19, P0_20, P0_21, P0_22, P0_23, P0_24, P0_25,
     P0_26, P0_27, P0_28, P0_29, P0_30, P0_31,
 );
+// The nRF52840's port 1 (D40).
+#[cfg(context = "nrf52840")]
+impl_pins!(
+    P1_00, P1_01, P1_02, P1_03, P1_04, P1_05, P1_06, P1_07, P1_08, P1_09, P1_10, P1_11, P1_12,
+    P1_13, P1_14, P1_15,
+);
 
 /// Tells the kernel a pin's direction and returns the level the kernel reports for it.
 fn configure(

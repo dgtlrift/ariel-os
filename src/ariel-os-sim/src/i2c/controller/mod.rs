@@ -78,37 +78,69 @@ impl Frequency {
 
 impl_i2c_from_frequency!();
 
-/// The `I2C0` peripheral's driver.
-pub struct I2C0 {
-    hz: u64,
+/// Defines a driver per I2C peripheral of the chip (D40): the sim board's `I2C0`, or the
+/// real chip's names, so a board's SBD-generated code names them as on hardware. The
+/// peripheral's name is the bus the simulator routes the transactions to.
+macro_rules! define_i2c_drivers {
+    ($( $peripheral:ident ),* $(,)?) => {
+        $(
+            #[doc = concat!("The `", stringify!($peripheral), "` peripheral's driver.")]
+            pub struct $peripheral {
+                hz: u64,
+            }
+
+            impl $peripheral {
+                /// Returns a driver implementing [`embedded_hal_async::i2c::I2c`] for this
+                /// I2C peripheral.
+                #[expect(clippy::new_ret_no_self)]
+                #[allow(
+                    clippy::needless_pass_by_value,
+                    reason = "the shape every Ariel HAL's driver has"
+                )]
+                #[must_use]
+                pub fn new<SDA: Pin, SCL: Pin>(
+                    sda_pin: impl crate::IntoPeripheral<'static, SDA>,
+                    scl_pin: impl crate::IntoPeripheral<'static, SCL>,
+                    config: Config,
+                ) -> I2c {
+                    let _ = (sda_pin.into_hal_peripheral(), scl_pin.into_hal_peripheral());
+                    I2c::$peripheral(Self {
+                        hz: u64::from(config.frequency.khz()) * 1000,
+                    })
+                }
+            }
+        )*
+
+        /// Peripheral-agnostic driver.
+        pub enum I2c {
+            $(
+                #[doc = concat!(stringify!($peripheral), " peripheral.")]
+                $peripheral($peripheral)
+            ),*
+        }
+
+        impl I2c {
+            /// The bus the simulator knows it by, and its clock.
+            fn bus(&self) -> (&'static str, u64) {
+                match self {
+                    $(Self::$peripheral(i2c) => (stringify!($peripheral), i2c.hz),)*
+                }
+            }
+        }
+
+        #[doc(hidden)]
+        pub fn take_all(peripherals: &mut crate::OptionalPeripherals) {
+            // Drivers are created from the peripheral type; keep the singletons from other
+            // uses.
+            $(let _ = peripherals.$peripheral.take();)*
+        }
+    };
 }
 
-impl I2C0 {
-    /// Returns a driver implementing [`embedded_hal_async::i2c::I2c`] for this I2C
-    /// peripheral.
-    #[expect(clippy::new_ret_no_self)]
-    #[allow(
-        clippy::needless_pass_by_value,
-        reason = "the shape every Ariel HAL's driver has"
-    )]
-    #[must_use]
-    pub fn new<SDA: Pin, SCL: Pin>(
-        sda_pin: impl crate::IntoPeripheral<'static, SDA>,
-        scl_pin: impl crate::IntoPeripheral<'static, SCL>,
-        config: Config,
-    ) -> I2c {
-        let _ = (sda_pin.into_hal_peripheral(), scl_pin.into_hal_peripheral());
-        I2c::I2C0(Self {
-            hz: u64::from(config.frequency.khz()) * 1000,
-        })
-    }
-}
-
-/// Peripheral-agnostic driver.
-pub enum I2c {
-    /// I2C0 peripheral.
-    I2C0(I2C0),
-}
+#[cfg(not(context = "nrf52840"))]
+define_i2c_drivers!(I2C0);
+#[cfg(context = "nrf52840")]
+define_i2c_drivers!(TWISPI0, TWISPI1);
 
 impl embedded_hal_async::i2c::ErrorType for I2c {
     type Error = Error;
@@ -124,7 +156,7 @@ impl embedded_hal_async::i2c::I2c for I2c {
         address: u8,
         operations: &mut [Operation<'_>],
     ) -> Result<(), Self::Error> {
-        let Self::I2C0(i2c) = self;
+        let (bus, hz) = self.bus();
         let ops = operations
             .iter()
             .map(|op| match op {
@@ -144,8 +176,8 @@ impl embedded_hal_async::i2c::I2c for I2c {
             k.request(&NodeMessage::I2c(I2cRequest {
                 msg: I2cMsg,
                 t: k.now(),
-                bus: "I2C0".into(),
-                hz: i2c.hz,
+                bus: bus.into(),
+                hz,
                 address: u64::from(address),
                 ops,
             }))

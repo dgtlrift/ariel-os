@@ -159,13 +159,13 @@ pub(crate) fn init() {
     debug!("ariel-os-embassy::init(): using interrupt mode executor");
     let p = hal::init();
 
-    #[cfg(any(context = "nrf", context = "stm32"))]
+    #[cfg(any(all(context = "nrf", not(sim_hardware)), context = "stm32"))]
     {
         use crate::hal::interrupt::{InterruptExt, Priority};
         hal::SWI.set_priority(Priority::P1);
     }
 
-    #[cfg(any(context = "nrf", context = "rp", context = "stm32"))]
+    #[cfg(any(all(context = "nrf", not(sim_hardware)), context = "rp", context = "stm32"))]
     {
         hal::EXECUTOR.start(hal::SWI);
         hal::EXECUTOR.spawner().spawn(init_task(p).unwrap());
@@ -239,7 +239,7 @@ async fn init_task(mut peripherals: hal::OptionalPeripherals) {
     #[cfg(feature = "storage")]
     embassy_futures::block_on(ariel_os_storage::init(&mut peripherals));
 
-    #[cfg(all(feature = "usb", context = "nrf"))]
+    #[cfg(all(feature = "usb", all(context = "nrf", not(sim_hardware))))]
     hal::usb::init();
 
     #[cfg(feature = "usb")]

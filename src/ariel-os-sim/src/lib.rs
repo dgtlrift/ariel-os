@@ -95,10 +95,24 @@ macro_rules! sim_peripherals {
     };
 }
 
+// The chip's peripherals by their real names (D40): a board's SBD-generated code names
+// them as on hardware. The context of a board built with `sim-hardware` picks the chip;
+// the `sim` board has generic names.
+#[cfg(not(context = "nrf52840"))]
 sim_peripherals!(
     P0_00, P0_01, P0_02, P0_03, P0_04, P0_05, P0_06, P0_07, P0_08, P0_09, P0_10, P0_11, P0_12,
     P0_13, P0_14, P0_15, P0_16, P0_17, P0_18, P0_19, P0_20, P0_21, P0_22, P0_23, P0_24, P0_25,
     P0_26, P0_27, P0_28, P0_29, P0_30, P0_31, SPI0, I2C0, FLASH, UART0, UART1,
+);
+// The nRF52840: ports 0 and 1, and the serial peripherals as Ariel's nRF HAL names them.
+// Its BLE radio is inside the chip, so it takes no board UART (`ble`).
+#[cfg(context = "nrf52840")]
+sim_peripherals!(
+    P0_00, P0_01, P0_02, P0_03, P0_04, P0_05, P0_06, P0_07, P0_08, P0_09, P0_10, P0_11, P0_12,
+    P0_13, P0_14, P0_15, P0_16, P0_17, P0_18, P0_19, P0_20, P0_21, P0_22, P0_23, P0_24, P0_25,
+    P0_26, P0_27, P0_28, P0_29, P0_30, P0_31, P1_00, P1_01, P1_02, P1_03, P1_04, P1_05, P1_06,
+    P1_07, P1_08, P1_09, P1_10, P1_11, P1_12, P1_13, P1_14, P1_15, UARTE0, UARTE1, TWISPI0,
+    TWISPI1, SPI3, FLASH,
 );
 
 /// The executor of this node.

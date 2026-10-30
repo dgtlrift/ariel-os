@@ -42,7 +42,7 @@ embassy-rp = { workspace = true }
 esp-hal = { workspace = true, default-features = false }
 portable-atomic = { workspace = true }
 
-[target.'cfg(context = "nrf")'.dependencies]
+[target.'cfg(all(context = "nrf", not(sim_hardware)))'.dependencies]
 cortex-m = { workspace = true, features = ["critical-section-single-core"] }
 
 [target.'cfg(context = "riscv")'.dependencies]

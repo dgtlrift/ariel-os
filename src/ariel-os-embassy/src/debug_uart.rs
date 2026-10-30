@@ -1,6 +1,6 @@
 #![deny(clippy::pedantic)]
 
-#[cfg(context = "nrf")]
+#[cfg(all(context = "nrf", not(sim_hardware)))]
 type UartDriver = embassy_nrf::uarte::Uarte<'static>;
 #[cfg(context = "rp2040")]
 type UartDriver = embassy_rp::uart::Uart<'static, embassy_rp::uart::Blocking>;
@@ -29,7 +29,7 @@ fn write_debug_uart(buffer: &[u8]) -> Result<(), ariel_os_log::backend::Error> {
 
     #[cfg(any(context = "rp", context = "stm32"))]
     use embedded_io::Write as _;
-    #[cfg(context = "nrf")]
+    #[cfg(all(context = "nrf", not(sim_hardware)))]
     use embedded_io_async::Write as _;
 
     embassy_futures::block_on(async {
@@ -39,7 +39,7 @@ fn write_debug_uart(buffer: &[u8]) -> Result<(), ariel_os_log::backend::Error> {
         if let Some(uart) = DEBUG_UART.try_get() {
             let mut uart = uart.lock().await;
 
-            #[cfg(context = "nrf")]
+            #[cfg(all(context = "nrf", not(sim_hardware)))]
             {
                 uart.write(buffer).await.map_err(|_| Error::Writing)?;
                 // TODO: is flushing needed here?
@@ -68,7 +68,7 @@ fn write_debug_uart(buffer: &[u8]) -> Result<(), ariel_os_log::backend::Error> {
 mod iot_lab {
     //! UART configuration required for [IoT-LAB](https://www.iot-lab.info).
 
-    #[cfg(context = "nrf")]
+    #[cfg(all(context = "nrf", not(sim_hardware)))]
     pub fn get_uart_driver(peripherals: &mut crate::hal::OptionalPeripherals) -> super::UartDriver {
         let mut config = embassy_nrf::uarte::Config::default();
 

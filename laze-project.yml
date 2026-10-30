@@ -686,7 +686,7 @@ contexts:
       simulation's. Binaries are started by the simulator, not by hand.
     parent: native-chip
     selects:
-      - sim-critical-section
+      - sim-hardware
     provides:
       - has_ble_sim
       - has_storage_support
@@ -994,6 +994,50 @@ contexts:
       CHIP_RAM_SIZE_BYTES: $(64 * 1024)
 
 modules:
+  # ariel-sim (dgtlrift/ariel-sim, D40): any board, built for the simulator by selecting
+  # this module (`laze build -b <board> -s sim-hardware`), from the board's own SBD file
+  # and laze entry. The firmware runs as a host process on the sim HAL (`ariel-os-sim`):
+  # its target is the host's, `--cfg sim_hardware` keeps the vendor HALs out, and the
+  # board's own contexts stay as cfgs, so the sim HAL offers that chip's names.
+  - name: sim-hardware
+    help: build this board for the ariel-sim simulator (D40)
+    disables:
+      # The architecture's target and linker settings (selected optionally by the
+      # cortex-m* modules, so they can be disabled here).
+      - cortex-m
+      - thumbv6m-none-eabi
+      - thumbv7em-none-eabi
+      - thumbv7em-none-eabihf
+      - thumbv8m.main-none-eabi
+      - thumbv8m.main-none-eabihf
+      # Hardware debugging and logging.
+      - semihosting
+      - defmt
+      - probe-rs
+      - logging-over-uart
+      - debug-uart
+      # Not on sim-chip (one host thread).
+      - infini-core
+      - sw/threading
+      - tuntap
+    # It provides nothing (has_ble_sim, has_storage_support): laze would then pick it
+    # for any board to satisfy an app. A board keeps its chip's capabilities (ble-nrf);
+    # their vendor crates are gated `not(sim_hardware)`, so the sim HAL's compile instead.
+    selects:
+      - sim-critical-section
+      - sim-logging-over-stdout
+    env:
+      global:
+        RUSTC_TARGET: x86_64-unknown-linux-gnu
+        CARGO_TARGET_PREFIX: CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU
+        CARGO_RUNNER: '"sh -c"'
+        RUSTFLAGS:
+          - --cfg sim_hardware
+          - --cfg context=\"sim-chip\"
+          - --cfg context=\"native-chip\"
+          # Keep the linkme sections on the host with gc-sections (as native-chip).
+          - -Clink-arg=-Wl,-znostart-stop-gc
+
   - name: thumbv6m-none-eabi
     env:
       global:
@@ -1060,8 +1104,9 @@ modules:
 
   - name: cortex-m0
     selects:
-      - cortex-m
-      - thumbv6m-none-eabi
+      # Optional, so sim-hardware can disable them (D40).
+      - ?cortex-m
+      - ?thumbv6m-none-eabi
     env:
       global:
         RUSTFLAGS:
@@ -1069,8 +1114,9 @@ modules:
 
   - name: cortex-m0-plus
     selects:
-      - cortex-m
-      - thumbv6m-none-eabi
+      # Optional, so sim-hardware can disable them (D40).
+      - ?cortex-m
+      - ?thumbv6m-none-eabi
     env:
       global:
         RUSTFLAGS:
@@ -1078,8 +1124,9 @@ modules:
 
   - name: cortex-m4
     selects:
-      - cortex-m
-      - thumbv7em-none-eabi
+      # Optional, so sim-hardware can disable them (D40).
+      - ?cortex-m
+      - ?thumbv7em-none-eabi
     env:
       global:
         RUSTFLAGS:
@@ -1087,8 +1134,9 @@ modules:
 
   - name: cortex-m4f
     selects:
-      - cortex-m
-      - thumbv7em-none-eabihf
+      # Optional, so sim-hardware can disable them (D40).
+      - ?cortex-m
+      - ?thumbv7em-none-eabihf
     env:
       global:
         RUSTFLAGS:
@@ -1096,8 +1144,9 @@ modules:
 
   - name: cortex-m7f
     selects:
-      - cortex-m
-      - thumbv7em-none-eabihf
+      # Optional, so sim-hardware can disable them (D40).
+      - ?cortex-m
+      - ?thumbv7em-none-eabihf
     env:
       global:
         RUSTFLAGS:
@@ -1105,8 +1154,9 @@ modules:
 
   - name: cortex-m33
     selects:
-      - cortex-m
-      - thumbv8m.main-none-eabi
+      # Optional, so sim-hardware can disable them (D40).
+      - ?cortex-m
+      - ?thumbv8m.main-none-eabi
     env:
       global:
         RUSTFLAGS:
@@ -1114,8 +1164,9 @@ modules:
 
   - name: cortex-m33f
     selects:
-      - cortex-m
-      - thumbv8m.main-none-eabihf
+      # Optional, so sim-hardware can disable them (D40).
+      - ?cortex-m
+      - ?thumbv8m.main-none-eabihf
     env:
       global:
         RUSTFLAGS:
@@ -2162,8 +2213,7 @@ modules:
       - doc-only
 
   - name: sim-critical-section
-    help: the host critical section of sim-chip, provided by its HAL (one thread)
-    context: sim-chip
+    help: the host critical section of the sim HAL (one thread), under sim-hardware
     provides_unique:
       - critical-section
 
@@ -2211,6 +2261,15 @@ modules:
       global:
         FEATURES:
           - ariel-os/logging-over-custom-transport
+
+  - name: sim-logging-over-stdout
+    help: 'private: stdout as the logging transport under sim-hardware, whatever the board'
+    provides_unique:
+      - logging-transport
+    env:
+      global:
+        FEATURES:
+          - ariel-os/logging-over-stdout
 
   # Ordered by priority.
   # Currently the logging transports are mutually exclusive.
