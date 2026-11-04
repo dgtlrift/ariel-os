@@ -8,8 +8,11 @@
 //! `OnceLock::get`, which `trouble-host` waits on), which on hardware spins while time
 //! passes. Here a task that keeps the executor busy without ever asking the kernel for
 //! anything would stop virtual time. So after [`SPIN_PASSES`] passes in a row that left
-//! the node's clock where it was, one tick of virtual time passes, as an `idle` with the
-//! next wake a tick away (M8c).
+//! the node's clock where it was, virtual time passes, as an `idle` with the next wake a
+//! tick away (M8c), then 2, 4, 8 ticks and so on while the spin goes on, never past the
+//! next timer nor [`SPIN_STEP_MAX`] (M9: a spin through the HCI start-up exchange took
+//! thousands of one-tick round trips). Bytes and edges from the kernel still wake the node
+//! when they arrive, so what ends a spin is seen at the same time either way.
 
 #![expect(unsafe_code)]
 
@@ -27,6 +30,9 @@ static PENDING: AtomicBool = AtomicBool::new(false);
 /// Tasks waking each other take a few passes; only a task polling by waking itself takes
 /// this many.
 const SPIN_PASSES: u32 = 1000;
+
+/// The most ticks a spinning node lets pass in one step (1 ms).
+const SPIN_STEP_MAX: u64 = 1000;
 
 #[unsafe(export_name = "__pender")]
 fn pender(_context: *mut ()) {
@@ -61,6 +67,8 @@ impl Executor {
         PENDING.store(true, Ordering::SeqCst);
         // Passes in a row that left the node's clock where it was.
         let mut still = 0;
+        // Ticks the next spinning step lets pass: doubled while the spin goes on.
+        let mut step: u64 = 1;
         loop {
             let mut spinning = false;
             while PENDING.swap(false, Ordering::SeqCst) {
@@ -72,6 +80,7 @@ impl Executor {
                     still += 1;
                 } else {
                     still = 0;
+                    step = 1;
                 }
                 if still >= SPIN_PASSES && PENDING.load(Ordering::SeqCst) {
                     spinning = true;
@@ -82,8 +91,9 @@ impl Executor {
             let next = kernel::with(|k| {
                 let now = k.ticks();
                 let next = k.timers.next_expiration(now);
-                if spinning { next.min(now + 1) } else { next }
+                if spinning { next.min(now + step) } else { next }
             });
+            step = if spinning { (step * 2).min(SPIN_STEP_MAX) } else { 1 };
             if PENDING.load(Ordering::SeqCst) && !spinning {
                 continue;
             }
