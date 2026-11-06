@@ -67,6 +67,9 @@ random = ["dep:ariel-os-random", "ariel-os-embassy/random"]
 csprng = ["dep:ariel-os-random", "ariel-os-random?/csprng"]
 # Enables seeding the random number generator from hardware.
 hwrng = ["ariel-os-embassy/hwrng"]
+## Enables the chip's own IEEE 802.15.4 radio, `hal::ieee802154` (the nRF52840's;
+## ariel-sim D60).
+ieee802154 = ["ariel-os-embassy/ieee802154"]
 ## Enables unified support for sensors.
 sensors = ["dep:ariel-os-sensors", "dep:ariel-os-sensors-registry"]
 

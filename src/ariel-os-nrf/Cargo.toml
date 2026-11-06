@@ -80,6 +80,9 @@ external-interrupts = [
 ## Enables seeding the random number generator from hardware.
 hwrng = ["dep:ariel-os-random"]
 
+## Enables the chip's IEEE 802.15.4 radio, `ieee802154` (ariel-sim D60).
+ieee802154 = []
+
 ## Enables I2C support.
 i2c = ["ariel-os-embassy-common/i2c", "time"]
 

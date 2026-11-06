@@ -282,6 +282,7 @@ contexts:
       - cortex-m4f
     provides:
       - has_ble_nrf
+      - has_ieee802154
     env:
       PROBE_RS_CHIP: nrf52840_xxAA
       CHIP_NVM_SIZE_BYTES: "$(1024 * 1024)"
@@ -693,6 +694,7 @@ contexts:
       - sim-hardware
     provides:
       - has_ble_sim
+      - has_ieee802154
       - has_storage_support
       - has_swi
     disables:
@@ -1951,6 +1953,22 @@ modules:
           - --cfg getrandom_backend=\"custom\"
 
   - name: has_hwrng
+    selects:
+      - doc-only
+
+  # ariel-sim D60: the chip's own IEEE 802.15.4 radio as `ariel_os::hal::ieee802154`,
+  # embassy-nrf's driver on an nRF52840, and the simulator's model of it on the `sim`
+  # board and under sim-hardware.
+  - name: ieee802154
+    help: The chip's own IEEE 802.15.4 radio, as `ariel_os::hal::ieee802154` (nRF52840).
+    selects:
+      - has_ieee802154
+    env:
+      global:
+        FEATURES:
+          - ariel-os/ieee802154
+
+  - name: has_ieee802154
     selects:
       - doc-only
 

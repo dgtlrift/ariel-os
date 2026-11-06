@@ -18,7 +18,9 @@ use std::collections::{BTreeMap, VecDeque};
 use std::io::{Read as _, Write as _};
 
 use crate::wire::generated::{HelloMsg, HelloVersion, IdleMsg};
-use crate::wire::{Edge, Hello, Idle, KernelMessage, NodeMessage, Reply, Start, UartRx};
+use crate::wire::{
+    Edge, Hello, Idle, KernelMessage, NodeMessage, RadioEvent, Reply, Start, UartRx,
+};
 use critical_section::Mutex;
 use socket2::{Domain, SockAddr, Socket, Type};
 
@@ -48,6 +50,13 @@ struct UartState {
     wakers: Vec<Waker>,
 }
 
+/// The chip radio's ended operations the firmware hasn't taken (D60).
+#[derive(Default)]
+struct RadioState {
+    events: VecDeque<RadioEvent>,
+    wakers: Vec<Waker>,
+}
+
 /// What the start message said.
 #[allow(
     dead_code,
@@ -69,6 +78,7 @@ pub(crate) struct Kernel {
     pins: BTreeMap<&'static str, PinState>,
     /// Open UARTs, by RX pin.
     uarts: BTreeMap<&'static str, UartState>,
+    radio: RadioState,
     pub(crate) timers: embassy_time_queue_utils::Queue,
     pub(crate) identity: Identity,
 }
@@ -110,6 +120,7 @@ pub(crate) fn connect() {
         now: 0,
         pins: BTreeMap::new(),
         uarts: BTreeMap::new(),
+        radio: RadioState::default(),
         timers: embassy_time_queue_utils::Queue::new(),
         identity: Identity {
             node: 0,
@@ -216,6 +227,7 @@ impl Kernel {
         self.now = self.now.max(reply.t);
         self.apply(&reply.edges);
         self.apply_uart(&reply.uart);
+        self.apply_radio(&reply.radio);
         match &reply.error {
             Some(error) => Err(error.clone()),
             None => Ok(reply),
@@ -237,6 +249,37 @@ impl Kernel {
         self.now = self.now.max(advance.t);
         self.apply(&advance.edges);
         self.apply_uart(&advance.uart);
+        self.apply_radio(&advance.radio);
+    }
+
+    fn apply_radio(&mut self, events: &[RadioEvent]) {
+        if events.is_empty() {
+            return;
+        }
+        self.radio.events.extend(events.iter().cloned());
+        for w in self.radio.wakers.drain(..) {
+            w.wake();
+        }
+    }
+
+    /// The chip radio's next ended operation, if one came (D60).
+    #[cfg_attr(not(feature = "ieee802154"), allow(dead_code))]
+    pub(crate) fn radio_take(&mut self) -> Option<RadioEvent> {
+        self.radio.events.pop_front()
+    }
+
+    /// Forgets the chip radio's ended operations: they belonged to a stopped one.
+    #[cfg_attr(not(feature = "ieee802154"), allow(dead_code))]
+    pub(crate) fn radio_clear(&mut self) {
+        self.radio.events.clear();
+    }
+
+    /// Wakes `waker` when the chip radio's next operation ends.
+    #[cfg_attr(not(feature = "ieee802154"), allow(dead_code))]
+    pub(crate) fn wake_on_radio(&mut self, waker: &Waker) {
+        if !self.radio.wakers.iter().any(|w| w.will_wake(waker)) {
+            self.radio.wakers.push(waker.clone());
+        }
     }
 
     fn apply_uart(&mut self, rxs: &[UartRx]) {

@@ -51,8 +51,10 @@ storage = ["dep:embedded-storage-async"]
 time = []
 ## Enables UART support.
 uart = ["dep:embedded-io-async", "ariel-os-embassy-common/uart"]
-## Enables BLE: the simulator's controller over HCI on UART1.
+## Enables BLE: the simulator's controller over the chip's internal HCI line.
 ble = ["dep:bt-hci", "dep:embassy-sync", "uart", "ariel-os-embassy-common/ble"]
+## Enables the chip's 802.15.4 radio (the nRF52840's RADIO; ariel-sim D60).
+ieee802154 = []
 
 [lints]
 workspace = true

@@ -31,6 +31,9 @@ bind_interrupts!(pub(crate) struct Irqs {
 
     #[cfg(feature = "ble")]
     RADIO => nrf_sdc::mpsl::HighPrioInterruptHandler;
+    // ariel-sim D60: the 802.15.4 driver owns the radio when BLE doesn't.
+    #[cfg(all(feature = "ieee802154", not(feature = "ble"), context = "nrf52840"))]
+    RADIO => embassy_nrf::radio::InterruptHandler<embassy_nrf::peripherals::RADIO>;
 
     #[cfg(feature = "ble")]
     TIMER0 => nrf_sdc::mpsl::HighPrioInterruptHandler;

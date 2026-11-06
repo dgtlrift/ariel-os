@@ -28,6 +28,9 @@ pub mod hwrng;
 #[cfg(feature = "i2c")]
 pub mod i2c;
 
+#[cfg(all(feature = "ieee802154", context = "nrf52840"))]
+pub mod ieee802154;
+
 #[doc(hidden)]
 pub mod identity;
 

@@ -111,6 +111,7 @@ tuntap = ["net"]
 random = ["dep:ariel-os-random", "dep:rand_core"]
 ## Use a hardware RNG to seed into the ariel-os-random system-wide RNG
 hwrng = ["ariel-os-hal/hwrng"]
+ieee802154 = ["ariel-os-hal/ieee802154"]
 
 ## Enables support for IPv4.
 ipv4 = ["ariel-os-hal/ipv4", "embassy-net?/proto-ipv4"]
