@@ -24,8 +24,9 @@ use serde::de::DeserializeOwned;
 
 pub use generated::{
     Advance, Edge, Flash, FlashOp, Hello, I2c, I2cOp, I2cOpKind, Idle, KernelMessage, NodeMessage,
-    PinConfig, PinConfigDir, PinConfigPull, PinSet, Reply, Shutdown, Spi, SpiOp, SpiOpKind, Start,
-    UartOpen, UartOpenParity, UartRx, UartWrite,
+    PinConfig, PinConfigDir, PinConfigPull, PinSet, Radio, RadioCca, RadioEvent, RadioEventKind,
+    RadioOp, Reply, Shutdown, Spi, SpiOp, SpiOpKind, Start, UartOpen, UartOpenParity, UartRx,
+    UartWrite,
 };
 
 /// The protocol version, `hello.version`. The kernel refuses a node built against another.

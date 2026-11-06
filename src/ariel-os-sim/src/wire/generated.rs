@@ -136,14 +136,14 @@ mod base64url_serde {
 /// First message on a new connection. `token` is the value the supervisor put in the
 /// process's environment (ARIEL_SIM_TOKEN), so a connection is tied to the process the
 /// supervisor started.
-/// cddl: schema/node.cddl:24: hello = {
+/// cddl: schema/node.cddl:25: hello = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Hello {
-    /// cddl: schema/node.cddl:25: msg: "hello",
+    /// cddl: schema/node.cddl:26: msg: "hello",
     pub msg:     HelloMsg,
-    /// cddl: schema/node.cddl:26: version: 2,
+    /// cddl: schema/node.cddl:27: version: 3,
     pub version: HelloVersion,
-    /// cddl: schema/node.cddl:27: token: tstr,
+    /// cddl: schema/node.cddl:28: token: tstr,
     pub token:   String,
 }
 
@@ -187,13 +187,13 @@ impl<'de> Deserialize<'de> for HelloMsg {
     }
 }
 
-/// Always the literal `2`.
+/// Always the literal `3`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct HelloVersion;
 
 impl HelloVersion {
     /// The literal value.
-    pub const VALUE: u64 = 2;
+    pub const VALUE: u64 = 3;
 }
 
 impl Serialize for HelloVersion {
@@ -219,14 +219,14 @@ impl<'de> Deserialize<'de> for HelloVersion {
 
 /// Nothing is ready to run. `next_wake` is the earliest timer, if any. The node blocks
 /// until `advance`.
-/// cddl: schema/node.cddl:32: idle = {
+/// cddl: schema/node.cddl:33: idle = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Idle {
-    /// cddl: schema/node.cddl:33: msg: "idle",
+    /// cddl: schema/node.cddl:34: msg: "idle",
     pub msg:       IdleMsg,
-    /// cddl: schema/node.cddl:34: t: uint,
+    /// cddl: schema/node.cddl:35: t: uint,
     pub t:         u64,
-    /// cddl: schema/node.cddl:35: ? next_wake: uint,
+    /// cddl: schema/node.cddl:36: ? next_wake: uint,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub next_wake: Option<u64>,
 }
@@ -271,7 +271,7 @@ impl<'de> Deserialize<'de> for IdleMsg {
     }
 }
 
-/// cddl: schema/node.cddl:44: dir: "in" / "out",
+/// cddl: schema/node.cddl:45: dir: "in" / "out",
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub enum PinConfigDir {
     #[default]
@@ -291,7 +291,7 @@ impl PinConfigDir {
     }
 }
 
-/// cddl: schema/node.cddl:46: ? pull: "up" / "down",        ; in: the level when nothing drives the pin
+/// cddl: schema/node.cddl:47: ? pull: "up" / "down",        ; in: the level when nothing drives the pin
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub enum PinConfigPull {
     #[default]
@@ -313,23 +313,23 @@ impl PinConfigPull {
 
 /// A pin became an input or an output. The reply carries the pin's level as the kernel
 /// sees it (an input driven by a device, or the output's own level).
-/// cddl: schema/node.cddl:40: pin-config = {
+/// cddl: schema/node.cddl:41: pin-config = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct PinConfig {
-    /// cddl: schema/node.cddl:41: msg: "pin-config",
+    /// cddl: schema/node.cddl:42: msg: "pin-config",
     pub msg:   PinConfigMsg,
-    /// cddl: schema/node.cddl:42: t: uint,
+    /// cddl: schema/node.cddl:43: t: uint,
     pub t:     u64,
-    /// cddl: schema/node.cddl:43: pin: tstr,
+    /// cddl: schema/node.cddl:44: pin: tstr,
     pub pin:   String,
-    /// cddl: schema/node.cddl:44: dir: "in" / "out",
+    /// cddl: schema/node.cddl:45: dir: "in" / "out",
     pub dir:   PinConfigDir,
     /// out: the initial level
-    /// cddl: schema/node.cddl:45: ? level: bool,                ; out: the initial level
+    /// cddl: schema/node.cddl:46: ? level: bool,                ; out: the initial level
     #[serde(skip_serializing_if = "Option::is_none")]
     pub level: Option<bool>,
     /// in: the level when nothing drives the pin
-    /// cddl: schema/node.cddl:46: ? pull: "up" / "down",        ; in: the level when nothing drives the pin
+    /// cddl: schema/node.cddl:47: ? pull: "up" / "down",        ; in: the level when nothing drives the pin
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pull:  Option<PinConfigPull>,
 }
@@ -375,16 +375,16 @@ impl<'de> Deserialize<'de> for PinConfigMsg {
 }
 
 /// An output pin changed (chip selects, NRESET).
-/// cddl: schema/node.cddl:50: pin-set = {
+/// cddl: schema/node.cddl:51: pin-set = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct PinSet {
-    /// cddl: schema/node.cddl:51: msg: "pin-set",
+    /// cddl: schema/node.cddl:52: msg: "pin-set",
     pub msg:   PinSetMsg,
-    /// cddl: schema/node.cddl:52: t: uint,
+    /// cddl: schema/node.cddl:53: t: uint,
     pub t:     u64,
-    /// cddl: schema/node.cddl:53: pin: tstr,
+    /// cddl: schema/node.cddl:54: pin: tstr,
     pub pin:   String,
-    /// cddl: schema/node.cddl:54: level: bool,
+    /// cddl: schema/node.cddl:55: level: bool,
     pub level: bool,
 }
 
@@ -428,7 +428,7 @@ impl<'de> Deserialize<'de> for PinSetMsg {
     }
 }
 
-/// cddl: schema/node.cddl:68: kind: "write" / "read" / "transfer",
+/// cddl: schema/node.cddl:69: kind: "write" / "read" / "transfer",
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub enum SpiOpKind {
     #[default]
@@ -450,13 +450,13 @@ impl SpiOpKind {
     }
 }
 
-/// cddl: schema/node.cddl:67: spi-op = {
+/// cddl: schema/node.cddl:68: spi-op = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct SpiOp {
-    /// cddl: schema/node.cddl:68: kind: "write" / "read" / "transfer",
+    /// cddl: schema/node.cddl:69: kind: "write" / "read" / "transfer",
     pub kind: SpiOpKind,
     /// write, transfer: the bytes clocked out
-    /// cddl: schema/node.cddl:69: ? out: bstr,                  ; write, transfer: the bytes clocked out
+    /// cddl: schema/node.cddl:70: ? out: bstr,                  ; write, transfer: the bytes clocked out
     #[serde(
         with = "base64url_serde::option",
         default,
@@ -464,7 +464,7 @@ pub struct SpiOp {
     )]
     pub out:  Option<Vec<u8>>,
     /// read: how many bytes to clock in
-    /// cddl: schema/node.cddl:70: ? len: uint,                  ; read: how many bytes to clock in
+    /// cddl: schema/node.cddl:71: ? len: uint,                  ; read: how many bytes to clock in
     #[serde(skip_serializing_if = "Option::is_none")]
     pub len:  Option<u64>,
 }
@@ -481,19 +481,19 @@ impl SpiOp {
 
 /// One SPI bus operation. The device is the one whose chip select is low (docs/m8.md
 /// item 8).
-/// cddl: schema/node.cddl:59: spi = {
+/// cddl: schema/node.cddl:60: spi = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Spi {
-    /// cddl: schema/node.cddl:60: msg: "spi",
+    /// cddl: schema/node.cddl:61: msg: "spi",
     pub msg: SpiMsg,
-    /// cddl: schema/node.cddl:61: t: uint,
+    /// cddl: schema/node.cddl:62: t: uint,
     pub t:   u64,
-    /// cddl: schema/node.cddl:62: bus: tstr,
+    /// cddl: schema/node.cddl:63: bus: tstr,
     pub bus: String,
     /// the clock the firmware configured: sets the bus time
-    /// cddl: schema/node.cddl:63: hz: uint,                     ; the clock the firmware configured: sets the bus time
+    /// cddl: schema/node.cddl:64: hz: uint,                     ; the clock the firmware configured: sets the bus time
     pub hz:  u64,
-    /// cddl: schema/node.cddl:64: op: spi-op,
+    /// cddl: schema/node.cddl:65: op: spi-op,
     pub op:  SpiOp,
 }
 
@@ -537,7 +537,7 @@ impl<'de> Deserialize<'de> for SpiMsg {
     }
 }
 
-/// cddl: schema/node.cddl:86: kind: "write" / "read",
+/// cddl: schema/node.cddl:87: kind: "write" / "read",
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub enum I2cOpKind {
     #[default]
@@ -557,13 +557,13 @@ impl I2cOpKind {
     }
 }
 
-/// cddl: schema/node.cddl:85: i2c-op = {
+/// cddl: schema/node.cddl:86: i2c-op = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct I2cOp {
-    /// cddl: schema/node.cddl:86: kind: "write" / "read",
+    /// cddl: schema/node.cddl:87: kind: "write" / "read",
     pub kind: I2cOpKind,
     /// write
-    /// cddl: schema/node.cddl:87: ? out: bstr,                  ; write
+    /// cddl: schema/node.cddl:88: ? out: bstr,                  ; write
     #[serde(
         with = "base64url_serde::option",
         default,
@@ -571,7 +571,7 @@ pub struct I2cOp {
     )]
     pub out:  Option<Vec<u8>>,
     /// read
-    /// cddl: schema/node.cddl:88: ? len: uint,                  ; read
+    /// cddl: schema/node.cddl:89: ? len: uint,                  ; read
     #[serde(skip_serializing_if = "Option::is_none")]
     pub len:  Option<u64>,
 }
@@ -586,7 +586,7 @@ impl I2cOp {
     }
 }
 
-/// cddl: schema/node.cddl:83: i2c-ops = [* i2c-op]
+/// cddl: schema/node.cddl:84: i2c-ops = [* i2c-op]
 pub type I2cOps = Vec<I2cOp>;
 
 pub fn encode_I2cOps(val: &I2cOps) -> Vec<u8> {
@@ -598,22 +598,22 @@ pub fn decode_I2cOps(data: &[u8]) -> Result<I2cOps, serde_json::Error> {
 }
 
 /// One I2C transaction: a start, the operations with repeated starts, a stop.
-/// cddl: schema/node.cddl:74: i2c = {
+/// cddl: schema/node.cddl:75: i2c = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct I2c {
-    /// cddl: schema/node.cddl:75: msg: "i2c",
+    /// cddl: schema/node.cddl:76: msg: "i2c",
     pub msg:     I2cMsg,
-    /// cddl: schema/node.cddl:76: t: uint,
+    /// cddl: schema/node.cddl:77: t: uint,
     pub t:       u64,
-    /// cddl: schema/node.cddl:77: bus: tstr,
+    /// cddl: schema/node.cddl:78: bus: tstr,
     pub bus:     String,
     /// as for spi
-    /// cddl: schema/node.cddl:78: hz: uint,                     ; as for spi
+    /// cddl: schema/node.cddl:79: hz: uint,                     ; as for spi
     pub hz:      u64,
     /// 7-bit
-    /// cddl: schema/node.cddl:79: address: uint,                ; 7-bit
+    /// cddl: schema/node.cddl:80: address: uint,                ; 7-bit
     pub address: u64,
-    /// cddl: schema/node.cddl:80: ops: i2c-ops,
+    /// cddl: schema/node.cddl:81: ops: i2c-ops,
     pub ops:     I2cOps,
 }
 
@@ -657,7 +657,7 @@ impl<'de> Deserialize<'de> for I2cMsg {
     }
 }
 
-/// cddl: schema/node.cddl:96: op: "read" / "write" / "erase",
+/// cddl: schema/node.cddl:97: op: "read" / "write" / "erase",
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub enum FlashOp {
     #[default]
@@ -681,25 +681,25 @@ impl FlashOp {
 
 /// A program-flash operation (docs/m8.md item 9). Offsets are from the start of the
 /// flash; `erase` covers [from, to), page-aligned.
-/// cddl: schema/node.cddl:93: flash = {
+/// cddl: schema/node.cddl:94: flash = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Flash {
-    /// cddl: schema/node.cddl:94: msg: "flash",
+    /// cddl: schema/node.cddl:95: msg: "flash",
     pub msg:    FlashMsg,
-    /// cddl: schema/node.cddl:95: t: uint,
+    /// cddl: schema/node.cddl:96: t: uint,
     pub t:      u64,
-    /// cddl: schema/node.cddl:96: op: "read" / "write" / "erase",
+    /// cddl: schema/node.cddl:97: op: "read" / "write" / "erase",
     pub op:     FlashOp,
     /// read, write
-    /// cddl: schema/node.cddl:97: ? offset: uint,               ; read, write
+    /// cddl: schema/node.cddl:98: ? offset: uint,               ; read, write
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<u64>,
     /// read
-    /// cddl: schema/node.cddl:98: ? len: uint,                  ; read
+    /// cddl: schema/node.cddl:99: ? len: uint,                  ; read
     #[serde(skip_serializing_if = "Option::is_none")]
     pub len:    Option<u64>,
     /// write
-    /// cddl: schema/node.cddl:99: ? data: bstr,                 ; write
+    /// cddl: schema/node.cddl:100: ? data: bstr,                 ; write
     #[serde(
         with = "base64url_serde::option",
         default,
@@ -707,11 +707,11 @@ pub struct Flash {
     )]
     pub data:   Option<Vec<u8>>,
     /// erase
-    /// cddl: schema/node.cddl:100: ? from: uint,                 ; erase
+    /// cddl: schema/node.cddl:101: ? from: uint,                 ; erase
     #[serde(skip_serializing_if = "Option::is_none")]
     pub from:   Option<u64>,
     /// erase
-    /// cddl: schema/node.cddl:101: ? to: uint,                   ; erase
+    /// cddl: schema/node.cddl:102: ? to: uint,                   ; erase
     #[serde(skip_serializing_if = "Option::is_none")]
     pub to:     Option<u64>,
 }
@@ -756,7 +756,7 @@ impl<'de> Deserialize<'de> for FlashMsg {
     }
 }
 
-/// cddl: schema/node.cddl:114: parity: "none" / "even" / "odd",
+/// cddl: schema/node.cddl:115: parity: "none" / "even" / "odd",
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub enum UartOpenParity {
     #[default]
@@ -781,26 +781,26 @@ impl UartOpenParity {
 /// A UART was set up on its TX and RX pins (M8c, docs/m8c.md item 11). The reply is an
 /// error if the board has no UART on those pins. The framing sets each byte's time on the
 /// wire: 1 start bit, the data bits, the parity bit if any, and the stop bits.
-/// cddl: schema/node.cddl:107: uart-open = {
+/// cddl: schema/node.cddl:108: uart-open = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct UartOpen {
-    /// cddl: schema/node.cddl:108: msg: "uart-open",
+    /// cddl: schema/node.cddl:109: msg: "uart-open",
     pub msg:       UartOpenMsg,
-    /// cddl: schema/node.cddl:109: t: uint,
+    /// cddl: schema/node.cddl:110: t: uint,
     pub t:         u64,
-    /// cddl: schema/node.cddl:110: tx: tstr,
+    /// cddl: schema/node.cddl:111: tx: tstr,
     pub tx:        String,
-    /// cddl: schema/node.cddl:111: rx: tstr,
+    /// cddl: schema/node.cddl:112: rx: tstr,
     pub rx:        String,
-    /// cddl: schema/node.cddl:112: baud: uint,
+    /// cddl: schema/node.cddl:113: baud: uint,
     pub baud:      u64,
     /// 5 to 9
-    /// cddl: schema/node.cddl:113: data_bits: uint,              ; 5 to 9
+    /// cddl: schema/node.cddl:114: data_bits: uint,              ; 5 to 9
     pub data_bits: u64,
-    /// cddl: schema/node.cddl:114: parity: "none" / "even" / "odd",
+    /// cddl: schema/node.cddl:115: parity: "none" / "even" / "odd",
     pub parity:    UartOpenParity,
     /// 1 or 2
-    /// cddl: schema/node.cddl:115: stop_bits: uint,              ; 1 or 2
+    /// cddl: schema/node.cddl:116: stop_bits: uint,              ; 1 or 2
     pub stop_bits: u64,
 }
 
@@ -845,16 +845,16 @@ impl<'de> Deserialize<'de> for UartOpenMsg {
 }
 
 /// Bytes sent on an open UART. The reply's `t` is when the last byte has left.
-/// cddl: schema/node.cddl:119: uart-write = {
+/// cddl: schema/node.cddl:120: uart-write = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct UartWrite {
-    /// cddl: schema/node.cddl:120: msg: "uart-write",
+    /// cddl: schema/node.cddl:121: msg: "uart-write",
     pub msg:  UartWriteMsg,
-    /// cddl: schema/node.cddl:121: t: uint,
+    /// cddl: schema/node.cddl:122: t: uint,
     pub t:    u64,
-    /// cddl: schema/node.cddl:122: tx: tstr,
+    /// cddl: schema/node.cddl:123: tx: tstr,
     pub tx:   String,
-    /// cddl: schema/node.cddl:123: data: bstr,
+    /// cddl: schema/node.cddl:124: data: bstr,
     #[serde(with = "base64url_serde")]
     pub data: Vec<u8>,
 }
@@ -899,7 +899,136 @@ impl<'de> Deserialize<'de> for UartWriteMsg {
     }
 }
 
-/// cddl: schema/node.cddl:14: node-message = hello / idle / pin-config / pin-set / spi / i2c / flash / uart-open /
+/// cddl: schema/node.cddl:136: op: "configure" / "receive" / "send" / "stop",
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub enum RadioOp {
+    #[default]
+    #[serde(rename = "configure")]
+    Configure,
+    #[serde(rename = "receive")]
+    Receive,
+    #[serde(rename = "send")]
+    Send,
+    #[serde(rename = "stop")]
+    Stop,
+}
+
+impl RadioOp {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+/// cddl: schema/node.cddl:139: ? cca: "carrier" / "energy",  ; configure
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub enum RadioCca {
+    #[default]
+    #[serde(rename = "carrier")]
+    Carrier,
+    #[serde(rename = "energy")]
+    Energy,
+}
+
+impl RadioCca {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+/// One operation on the chip's own radio in its 802.15.4 mode (D60, D63): the nRF52840's
+/// RADIO, as embassy-nrf's `radio::ieee802154::Radio` drives it. This is the peripheral's
+/// envelope only: `psdu` is the 802.15.4 frame as the firmware built it, without its FCS,
+/// opaque octets the kernel never parses. `configure` sets every setting at once;
+/// `receive` and `send` start an operation, each ending in a `radio-event`; `stop` ends
+/// one early (a dropped future). The reply's `t` is when the radio took the operation.
+/// cddl: schema/node.cddl:133: radio = {
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct Radio {
+    /// cddl: schema/node.cddl:134: msg: "radio",
+    pub msg:          RadioMsg,
+    /// cddl: schema/node.cddl:135: t: uint,
+    pub t:            u64,
+    /// cddl: schema/node.cddl:136: op: "configure" / "receive" / "send" / "stop",
+    pub op:           RadioOp,
+    /// configure: 11 to 26
+    /// cddl: schema/node.cddl:137: ? channel: uint,              ; configure: 11 to 26
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub channel:      Option<u64>,
+    /// configure: as `set_transmission_power`
+    /// cddl: schema/node.cddl:138: ? power_dbm: int,             ; configure: as `set_transmission_power`
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub power_dbm:    Option<i64>,
+    /// configure
+    /// cddl: schema/node.cddl:139: ? cca: "carrier" / "energy",  ; configure
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cca:          Option<RadioCca>,
+    /// configure, energy: the CCAEDTHRES value, 0 to 255
+    /// cddl: schema/node.cddl:140: ? ed_threshold: uint,         ; configure, energy: the CCAEDTHRES value, 0 to 255
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ed_threshold: Option<u64>,
+    /// configure: the start-of-frame delimiter
+    /// cddl: schema/node.cddl:141: ? sfd: uint,                  ; configure: the start-of-frame delimiter
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sfd:          Option<u64>,
+    /// send
+    /// cddl: schema/node.cddl:142: ? psdu: bstr,                 ; send
+    #[serde(
+        with = "base64url_serde::option",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub psdu:         Option<Vec<u8>>,
+}
+
+impl Radio {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+/// Always the literal `"radio"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct RadioMsg;
+
+impl RadioMsg {
+    /// The literal value.
+    pub const VALUE: &'static str = "radio";
+}
+
+impl Serialize for RadioMsg {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        Self::VALUE.serialize(s)
+    }
+}
+
+impl<'de> Deserialize<'de> for RadioMsg {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let v = <String>::deserialize(d)?;
+        if v == Self::VALUE {
+            Ok(Self)
+        } else {
+            Err(serde::de::Error::custom(format!(
+                "expected {:?}, found {:?}",
+                Self::VALUE,
+                v
+            )))
+        }
+    }
+}
+
+/// cddl: schema/node.cddl:15: node-message = hello / idle / pin-config / pin-set / spi / i2c / flash / uart-open /
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum NodeMessage {
@@ -912,6 +1041,7 @@ pub enum NodeMessage {
     Flash(Flash),
     UartOpen(UartOpen),
     UartWrite(UartWrite),
+    Radio(Radio),
 }
 
 impl Default for NodeMessage {
@@ -931,30 +1061,30 @@ impl NodeMessage {
 }
 
 /// The answer to `hello`: who the node is and when it boots.
-/// cddl: schema/node.cddl:133: start = {
+/// cddl: schema/node.cddl:152: start = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Start {
-    /// cddl: schema/node.cddl:134: msg: "start",
+    /// cddl: schema/node.cddl:153: msg: "start",
     pub msg:            StartMsg,
     /// boot time
-    /// cddl: schema/node.cddl:135: t: uint,                      ; boot time
+    /// cddl: schema/node.cddl:154: t: uint,                      ; boot time
     pub t:              u64,
-    /// cddl: schema/node.cddl:136: node: uint,
+    /// cddl: schema/node.cddl:155: node: uint,
     pub node:           u64,
     /// 1 for the first boot of a run
-    /// cddl: schema/node.cddl:137: boot: uint,                   ; 1 for the first boot of a run
+    /// cddl: schema/node.cddl:156: boot: uint,                   ; 1 for the first boot of a run
     pub boot:           u64,
     /// device identity (D13, or node.yaml)
-    /// cddl: schema/node.cddl:138: eui64: bstr .size 8,          ; device identity (D13, or node.yaml)
+    /// cddl: schema/node.cddl:157: eui64: bstr .size 8,          ; device identity (D13, or node.yaml)
     #[serde(with = "base64url_serde")]
     pub eui64:          Vec<u8>,
     /// from seed path node/<id> (D12)
-    /// cddl: schema/node.cddl:139: rng_seed: uint,               ; from seed path node/<id> (D12)
+    /// cddl: schema/node.cddl:158: rng_seed: uint,               ; from seed path node/<id> (D12)
     pub rng_seed:       u64,
     /// the storage region in the program flash
-    /// cddl: schema/node.cddl:140: storage_offset: uint,         ; the storage region in the program flash
+    /// cddl: schema/node.cddl:159: storage_offset: uint,         ; the storage region in the program flash
     pub storage_offset: u64,
-    /// cddl: schema/node.cddl:141: storage_len: uint,
+    /// cddl: schema/node.cddl:160: storage_len: uint,
     pub storage_len:    u64,
 }
 
@@ -998,14 +1128,14 @@ impl<'de> Deserialize<'de> for StartMsg {
     }
 }
 
-/// cddl: schema/node.cddl:155: edge = {
+/// cddl: schema/node.cddl:175: edge = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Edge {
-    /// cddl: schema/node.cddl:156: pin: tstr,
+    /// cddl: schema/node.cddl:176: pin: tstr,
     pub pin:   String,
-    /// cddl: schema/node.cddl:157: level: bool,
+    /// cddl: schema/node.cddl:177: level: bool,
     pub level: bool,
-    /// cddl: schema/node.cddl:158: at: uint,
+    /// cddl: schema/node.cddl:178: at: uint,
     pub at:    u64,
 }
 
@@ -1019,7 +1149,7 @@ impl Edge {
     }
 }
 
-/// cddl: schema/node.cddl:153: edges = [* edge]
+/// cddl: schema/node.cddl:173: edges = [* edge]
 pub type Edges = Vec<Edge>;
 
 pub fn encode_Edges(val: &Edges) -> Vec<u8> {
@@ -1031,14 +1161,14 @@ pub fn decode_Edges(data: &[u8]) -> Result<Edges, serde_json::Error> {
 }
 
 /// Bytes a device sent to an open UART, `at` the time the last of them arrived on `rx`.
-/// cddl: schema/node.cddl:164: uart-rx = {
+/// cddl: schema/node.cddl:184: uart-rx = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct UartRx {
-    /// cddl: schema/node.cddl:165: rx: tstr,
+    /// cddl: schema/node.cddl:185: rx: tstr,
     pub rx:   String,
-    /// cddl: schema/node.cddl:166: at: uint,
+    /// cddl: schema/node.cddl:186: at: uint,
     pub at:   u64,
-    /// cddl: schema/node.cddl:167: data: bstr,
+    /// cddl: schema/node.cddl:187: data: bstr,
     #[serde(with = "base64url_serde")]
     pub data: Vec<u8>,
 }
@@ -1053,7 +1183,7 @@ impl UartRx {
     }
 }
 
-/// cddl: schema/node.cddl:161: uart-rxs = [* uart-rx]
+/// cddl: schema/node.cddl:181: uart-rxs = [* uart-rx]
 pub type UartRxs = Vec<UartRx>;
 
 pub fn encode_UartRxs(val: &UartRxs) -> Vec<u8> {
@@ -1064,20 +1194,97 @@ pub fn decode_UartRxs(data: &[u8]) -> Result<UartRxs, serde_json::Error> {
     serde_json::from_slice(data)
 }
 
+/// cddl: schema/node.cddl:196: kind: "received" / "sent" / "busy",
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub enum RadioEventKind {
+    #[default]
+    #[serde(rename = "received")]
+    Received,
+    #[serde(rename = "sent")]
+    Sent,
+    #[serde(rename = "busy")]
+    Busy,
+}
+
+impl RadioEventKind {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+/// A `radio` operation ended at `at`: a frame received (PHYEND), a frame sent, or a `send`
+/// whose CCA found the channel busy, so nothing was sent.
+/// cddl: schema/node.cddl:194: radio-event = {
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct RadioEvent {
+    /// cddl: schema/node.cddl:195: at: uint,
+    pub at:     u64,
+    /// cddl: schema/node.cddl:196: kind: "received" / "sent" / "busy",
+    pub kind:   RadioEventKind,
+    /// received: without its FCS
+    /// cddl: schema/node.cddl:197: ? psdu: bstr,                 ; received: without its FCS
+    #[serde(
+        with = "base64url_serde::option",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub psdu:   Option<Vec<u8>>,
+    /// received
+    /// cddl: schema/node.cddl:198: ? fcs_ok: bool,               ; received
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fcs_ok: Option<bool>,
+    /// received: the FCS as heard
+    /// cddl: schema/node.cddl:199: ? fcs: uint,                  ; received: the FCS as heard
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fcs:    Option<u64>,
+    /// received
+    /// cddl: schema/node.cddl:200: ? lqi: uint,                  ; received
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lqi:    Option<u64>,
+}
+
+impl RadioEvent {
+    pub fn encode(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("encode")
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(data)
+    }
+}
+
+/// cddl: schema/node.cddl:190: radio-events = [* radio-event]
+pub type RadioEvents = Vec<RadioEvent>;
+
+pub fn encode_RadioEvents(val: &RadioEvents) -> Vec<u8> {
+    serde_json::to_vec(val).expect("encode")
+}
+
+pub fn decode_RadioEvents(data: &[u8]) -> Result<RadioEvents, serde_json::Error> {
+    serde_json::from_slice(data)
+}
+
 /// Run from `t`. `edges` are input pin changes at or before `t` the node hasn't been
 /// given yet, in time order.
-/// cddl: schema/node.cddl:146: advance = {
+/// cddl: schema/node.cddl:165: advance = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Advance {
-    /// cddl: schema/node.cddl:147: msg: "advance",
+    /// cddl: schema/node.cddl:166: msg: "advance",
     pub msg:   AdvanceMsg,
-    /// cddl: schema/node.cddl:148: t: uint,
+    /// cddl: schema/node.cddl:167: t: uint,
     pub t:     u64,
-    /// cddl: schema/node.cddl:149: edges: edges,
+    /// cddl: schema/node.cddl:168: edges: edges,
     pub edges: Edges,
     /// as edges: bytes received up to `t`
-    /// cddl: schema/node.cddl:150: uart: uart-rxs,               ; as edges: bytes received up to `t`
+    /// cddl: schema/node.cddl:169: uart: uart-rxs,               ; as edges: bytes received up to `t`
     pub uart:  UartRxs,
+    /// as edges: the radio's operations ended up to `t`
+    /// cddl: schema/node.cddl:170: radio: radio-events,          ; as edges: the radio's operations ended up to `t`
+    pub radio: RadioEvents,
 }
 
 impl Advance {
@@ -1120,25 +1327,27 @@ impl<'de> Deserialize<'de> for AdvanceMsg {
     }
 }
 
-/// The answer to a pin, SPI, I2C, flash or UART request. `t` is when the operation ended: the
-/// node's clock continues from there. `edges` are input changes up to `t`.
-/// cddl: schema/node.cddl:172: reply = {
+/// The answer to a pin, SPI, I2C, flash, UART or radio request. `t` is when the operation
+/// ended: the node's clock continues from there. `edges` are input changes up to `t`.
+/// cddl: schema/node.cddl:205: reply = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Reply {
-    /// cddl: schema/node.cddl:173: msg: "reply",
+    /// cddl: schema/node.cddl:206: msg: "reply",
     pub msg:   ReplyMsg,
-    /// cddl: schema/node.cddl:174: t: uint,
+    /// cddl: schema/node.cddl:207: t: uint,
     pub t:     u64,
-    /// cddl: schema/node.cddl:175: edges: edges,
+    /// cddl: schema/node.cddl:208: edges: edges,
     pub edges: Edges,
-    /// cddl: schema/node.cddl:176: uart: uart-rxs,
+    /// cddl: schema/node.cddl:209: uart: uart-rxs,
     pub uart:  UartRxs,
+    /// cddl: schema/node.cddl:210: radio: radio-events,
+    pub radio: RadioEvents,
     /// pin-config
-    /// cddl: schema/node.cddl:177: ? level: bool,                ; pin-config
+    /// cddl: schema/node.cddl:211: ? level: bool,                ; pin-config
     #[serde(skip_serializing_if = "Option::is_none")]
     pub level: Option<bool>,
     /// spi read and transfer, flash read; i2c: the bytes of
-    /// cddl: schema/node.cddl:178: ? data: bstr,                 ; spi read and transfer, flash read; i2c: the bytes of
+    /// cddl: schema/node.cddl:212: ? data: bstr,                 ; spi read and transfer, flash read; i2c: the bytes of
     #[serde(
         with = "base64url_serde::option",
         default,
@@ -1147,11 +1356,11 @@ pub struct Reply {
     pub data:  Option<Vec<u8>>,
     /// every read op, concatenated in order
     /// i2c: the byte not acknowledged (0 is the address)
-    /// cddl: schema/node.cddl:180: ? nack: uint,                 ; i2c: the byte not acknowledged (0 is the address)
+    /// cddl: schema/node.cddl:214: ? nack: uint,                 ; i2c: the byte not acknowledged (0 is the address)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nack:  Option<u64>,
     /// a request the kernel refused (an unknown pin or bus)
-    /// cddl: schema/node.cddl:181: ? error: tstr,                ; a request the kernel refused (an unknown pin or bus)
+    /// cddl: schema/node.cddl:215: ? error: tstr,                ; a request the kernel refused (an unknown pin or bus)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
 }
@@ -1197,10 +1406,10 @@ impl<'de> Deserialize<'de> for ReplyMsg {
 }
 
 /// The node is being removed or the run is ending. The process exits.
-/// cddl: schema/node.cddl:185: shutdown = {
+/// cddl: schema/node.cddl:219: shutdown = {
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Shutdown {
-    /// cddl: schema/node.cddl:186: msg: "shutdown",
+    /// cddl: schema/node.cddl:220: msg: "shutdown",
     pub msg: ShutdownMsg,
 }
 
@@ -1245,7 +1454,7 @@ impl<'de> Deserialize<'de> for ShutdownMsg {
 }
 
 /// ── Node to kernel ───────────────────────────────────────────────────────────
-/// cddl: schema/node.cddl:17: kernel-message = start / advance / reply / shutdown
+/// cddl: schema/node.cddl:18: kernel-message = start / advance / reply / shutdown
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum KernelMessage {
