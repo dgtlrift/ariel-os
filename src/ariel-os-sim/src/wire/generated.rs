@@ -1081,8 +1081,8 @@ pub struct Start {
     /// cddl: schema/node.cddl:159: eui64: bstr .size 8,          ; device identity (D13, or node.yaml)
     #[serde(with = "base64url_serde")]
     pub eui64:          Vec<u8>,
-    /// from seed path node/<id> (D12)
-    /// cddl: schema/node.cddl:160: rng_seed: uint,               ; from seed path node/<id> (D12)
+    /// from seed path `node/<id>` (D12)
+    /// cddl: schema/node.cddl:160: rng_seed: uint,               ; from seed path `node/<id>` (D12)
     pub rng_seed:       u64,
     /// the storage region in the program flash
     /// cddl: schema/node.cddl:161: storage_offset: uint,         ; the storage region in the program flash
