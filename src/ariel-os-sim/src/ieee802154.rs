@@ -246,6 +246,31 @@ impl<'d> Radio<'d> {
             RadioEventKind::Received => panic!("ariel-sim: a send ended as a reception"),
         }
     }
+
+    /// Sends the given `packet` at once, without CCA: for an 802.15.4 ACK, which goes
+    /// `aTurnaroundTime` after its frame whatever the channel (802.15.4-2020 section
+    /// 6.7.4.3). Not in embassy-nrf's API (ariel-sim D62-1c).
+    ///
+    /// From RXIDLE, where [`Radio::receive`] leaves the radio, the frame starts after
+    /// the RX-to-TX turnaround (40 µs, nRF52840 Product Specification section
+    /// 6.20.15.8); otherwise after `tTXEN` (130 µs).
+    ///
+    /// # Errors
+    ///
+    /// None in the simulator; the `Result` matches [`Radio::try_send`]'s.
+    ///
+    /// # Panics
+    ///
+    /// If the simulator ends the operation as other than a send: its bug.
+    pub async fn send_now(&mut self, packet: &mut Packet) -> Result<(), Error> {
+        self.prepare();
+        Self::request(RadioOp::SendNow, None, Some(packet));
+        let dropper = OnDrop::new(|| Self::request(RadioOp::Stop, None, None));
+        let e = Self::end().await;
+        dropper.defuse();
+        assert_eq!(e.kind, RadioEventKind::Sent, "ariel-sim: radio event");
+        Ok(())
+    }
 }
 
 /// An IEEE 802.15.4 packet.
