@@ -296,6 +296,7 @@ impl Kernel {
     }
 
     /// Starts receiving on an opened UART, with the firmware's buffer size.
+    #[cfg(feature = "uart")]
     pub(crate) fn uart_opened(&mut self, rx: &'static str, capacity: usize) {
         self.uarts.insert(
             rx,
@@ -308,11 +309,13 @@ impl Kernel {
     }
 
     /// Stops receiving on a UART (its driver was dropped).
+    #[cfg(feature = "uart")]
     pub(crate) fn uart_closed(&mut self, rx: &'static str) {
         self.uarts.remove(rx);
     }
 
     /// Moves received bytes into `buf`; how many.
+    #[cfg(feature = "uart")]
     pub(crate) fn uart_take(&mut self, rx: &'static str, buf: &mut [u8]) -> usize {
         let Some(u) = self.uarts.get_mut(rx) else {
             return 0;
@@ -325,11 +328,13 @@ impl Kernel {
     }
 
     /// Bytes received and not yet read.
+    #[cfg(feature = "uart")]
     pub(crate) fn uart_available(&self, rx: &'static str) -> usize {
         self.uarts.get(rx).map_or(0, |u| u.data.len())
     }
 
     /// Wakes `waker` when bytes arrive on the UART.
+    #[cfg(feature = "uart")]
     pub(crate) fn wake_on_uart(&mut self, rx: &'static str, waker: &Waker) {
         if let Some(u) = self.uarts.get_mut(rx)
             && !u.wakers.iter().any(|w| w.will_wake(waker))
